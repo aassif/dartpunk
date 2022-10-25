@@ -41,43 +41,35 @@ namespace ed900::menu
     return {double_in, double_out};
   }
 
+  void X01::render_text (const string & text, const Rect & r, const Color & c, bool selected) const
+  {
+    if (selected)
+    {
+      app->draw (r, c, blend::NONE);
+      app->draw (text, r.x, r.y + 1, 1);
+    }
+    else
+    {
+      app->draw (text, r.x, r.y + 1, 1);
+      app->draw (r, c, blend::MODULATE);
+    }
+  }
+
   void X01::render () const
   {
-    static const SDL_Rect R0 {32-2*8/2, 32-3*9/2+1*9, 16+1, 9};
-    static const SDL_Rect R1 {32-2*8/2, 32-3*9/2+2*9, 16+1, 9};
-    app->draw ("IN", 32-2*8/2+1, 32-3*9/2+0*9+1, 1);
-    if (double_in)
-    {
-      app->draw ("1x", R0.x, R0.y+1, 1);
-      app->draw (R0, App::Color (0), SDL_BLENDMODE_MOD);
-      app->draw (R1, App::Color (0), SDL_BLENDMODE_NONE);
-      app->draw ("2x", R1.x, R1.y+1, 1);
-    }
-    else
-    {
-      app->draw (R0, App::Color (0), SDL_BLENDMODE_NONE);
-      app->draw ("1x", R0.x, R0.y+1, 1);
-      app->draw ("2x", R1.x, R1.y+1, 1);
-      app->draw (R1, App::Color (0), SDL_BLENDMODE_MOD);
-    }
+    static const Rect R0 {32-2*8/2, 32-3*9/2+1*9, 16+1, 9};
+    static const Rect R1 {32-2*8/2, 32-3*9/2+2*9, 16+1, 9};
 
-    static const SDL_Rect R2 {96-2*8/2, 32-3*9/2+1*9, 16+1, 9};
-    static const SDL_Rect R3 {96-2*8/2, 32-3*9/2+2*9, 16+1, 9};
+    app->draw ("IN", 32-2*8/2+1, 32-3*9/2+0*9+1, 1);
+    render_text ("1x", R0, App::COLORS [0], ! double_in);
+    render_text ("2x", R1, App::COLORS [0],   double_in);
+
+    static const Rect R2 {96-2*8/2, 32-3*9/2+1*9, 16+1, 9};
+    static const Rect R3 {96-2*8/2, 32-3*9/2+2*9, 16+1, 9};
+
     app->draw ("OUT", 96-3*8/2+1, 32-3*9/2+0*9+1, 1);
-    if (double_out)
-    {
-      app->draw ("1x", R2.x, R2.y+1, 1);
-      app->draw (R2, App::Color (1), SDL_BLENDMODE_MOD);
-      app->draw (R3, App::Color (1), SDL_BLENDMODE_NONE);
-      app->draw ("2x", R3.x, R3.y+1, 1);
-    }
-    else
-    {
-      app->draw (R2, App::Color (1), SDL_BLENDMODE_NONE);
-      app->draw ("1x", R2.x, R2.y+1, 1);
-      app->draw ("2x", R3.x, R3.y+1, 1);
-      app->draw (R3, App::Color (1), SDL_BLENDMODE_MOD);
-    }
+    render_text ("1x", R2, App::COLORS [1], ! double_out);
+    render_text ("2x", R3, App::COLORS [1],   double_out);
   }
 
 } // ed900::menu

@@ -3,102 +3,104 @@
 
 #include <string>
 #include <map>
+#include <functional>
 
-#include <SDL2/SDL.h>
+#include "image.h"
 
 namespace ed900
 {
+
+  class App;
+
   class Font
   {
     protected:
+      Image image;
       uint8_t width;
       uint8_t height;
-      SDL_Renderer * renderer;
-      SDL_Texture * texture;
-      std::map<char, SDL_Rect> index;
+      std::map<char, Rect> index;
 
     public:
-      Font (SDL_Renderer *, const std::string & path, uint8_t w, uint8_t h);
-      Font (Font &&);
-      virtual ~Font ();
-      void draw (char, int x, int y);
-      void draw (const std::string &, int x, int y);
+      Font (const std::string & path, uint8_t w, uint8_t h);
+      void draw (App *, char, int x, int y);
+      void draw (App *, const std::string &, int x, int y);
   };
 
 /*
   class FontPico8 : public Font
   {
     public:
-      FontPico8 (SDL_Renderer *);
+      FontPico8 ();
   };
 */
 
   class FontTomThumb : public Font
   {
     public:
-      FontTomThumb (SDL_Renderer *);
+      FontTomThumb ();
   };
 
 /*
   class FontAmstrad : public Font
   {
     public:
-      FontAmstrad (SDL_Renderer *);
+      FontAmstrad ();
   };
 */
 
   class FontTopaz : public Font
   {
     public:
-      FontTopaz (SDL_Renderer *);
+      FontTopaz ();
   };
 
   class FontRoboto : public Font
   {
     public:
-      FontRoboto (SDL_Renderer *);
+      FontRoboto ();
   };
 
 /*
   class FontRazor1911 : public Font
   {
     public:
-      FontRazor1911 (SDL_Renderer *);
+      FontRazor1911 ();
   };
 
   class FontMagicPockets : public Font
   {
     public:
-      FontMagicPockets (SDL_Renderer *);
+      FontMagicPockets ();
   };
 */
 
   class FontNormal : public Font
   {
     public:
-      FontNormal (SDL_Renderer *);
+      FontNormal ();
   };
 
   class FontScore : public Font
   {
     public:
-      FontScore (SDL_Renderer *);
+      FontScore ();
   };
 
 /*
   class FontLarge : public Font
   {
     public:
-      FontLarge (SDL_Renderer *);
+      FontLarge ();
   };
 */
 
   class FontCricket : public Font
   {
     public:
-      FontCricket (SDL_Renderer *);
+      FontCricket ();
   };
-}
+
+} // ed900
 
 #endif // __ED900_FONT__
 

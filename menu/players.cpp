@@ -12,7 +12,7 @@ namespace ed900::menu
 
   Players::Players (App * app) :
     Abstract {app},
-    icon {app->load ("images/player.png")},
+    icon {"images/player.png"},
     config {"P1", "P2", "P3", "P4"},
     count {0},
     states {},
@@ -23,11 +23,6 @@ namespace ed900::menu
       config.push_back (line);
 
     states.resize (config.size ());
-  }
-
-  Players::~Players ()
-  {
-    SDL_DestroyTexture (icon);
   }
 
   uint8_t Players::find_prev (uint8_t k0)
@@ -129,19 +124,19 @@ namespace ed900::menu
         uint8_t n = 2*y + x + 1;
         bool active = (n == selection);
 
-        SDL_Rect R = {64*x, 32*y, 64, 32};
+        Rect R {64*x, 32*y, 64, 32};
 
         if (active)
-          app->draw (R, App::Color (n-1), SDL_BLENDMODE_NONE);
+          app->draw (R, App::COLORS [n-1], blend::NONE);
 
         for (uint8_t i = 0; i < n; ++i)
         {
-          SDL_Rect r = {R.x + 32 - 5*n + 10*i, R.y + 8, 9, 16};
-          app->draw (icon, r);
+          Point dst {R.x + 32 - 5*n + 10*i, R.y + 8};
+          app->draw (icon, {0, 0, 9, 16}, dst);
         }
 
         if (! active)
-          app->draw (R, App::Color (n-1), SDL_BLENDMODE_MOD);
+          app->draw (R, App::COLORS [n-1], blend::MODULATE);
       }
   }
 
@@ -150,8 +145,8 @@ namespace ed900::menu
     string title = "Player" + to_string (1 + result.size ());
     app->draw (title, 64-7*4, 2, 1);
 
-    SDL_Color color = App::Color (result.size ());
-    app->draw ({64-7*4, 2, 7*8, 10}, color, SDL_BLENDMODE_MOD);
+    const Color & color = App::COLORS [result.size ()];
+    app->draw ({64-7*4, 2, 7*8, 10}, color, blend::MODULATE);
 
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 4; ++x)
@@ -159,16 +154,16 @@ namespace ed900::menu
         uint8_t n = 4*y + x;
         bool active = (n == selection);
 
-        SDL_Rect R = {32*x, 16+8*y, 32, 8};
+        Rect R {32*x, 16+8*y, 32, 8};
 
         if (active)
-          app->draw (R, color, SDL_BLENDMODE_NONE);
+          app->draw (R, color, blend::NONE);
 
         if (n < config.size ())
           app->draw (config [n], R.x + 1, R.y + 1, 0);
 
         if (states[n] != 0)
-          app->draw (R, App::Color (states[n]-1), SDL_BLENDMODE_MOD);
+          app->draw (R, App::COLORS [states[n]-1], blend::MODULATE);
       }
   }
 

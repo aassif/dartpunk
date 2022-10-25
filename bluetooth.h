@@ -1,7 +1,7 @@
 #ifndef __ED900_BLUETOOTH__
 #define __ED900_BLUETOOTH__
 
-#include <SDL2/SDL.h>
+#include "image.h"
 
 namespace ed900
 {
@@ -11,7 +11,7 @@ namespace ed900
   {
     private:
       App * app;
-      SDL_Texture * logo;
+      Image logo;
 
     public: 
       Bluetooth (App *);

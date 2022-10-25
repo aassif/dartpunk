@@ -1,9 +1,6 @@
 #include <iostream>
-#include <utility> // exchange
 
-#include <SDL2/SDL_image.h>
-
-#include "font.h"
+#include "app.h"
 
 using namespace std;
 
@@ -12,50 +9,32 @@ namespace ed900
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  Font::Font (SDL_Renderer * r,
-              const string & path,
+  Font::Font (const string & path,
               uint8_t w, uint8_t h) :
+    image {path},
     width {w},
     height {h},
-    renderer {r},
-    texture {nullptr},
     index {}
   {
-    texture = IMG_LoadTexture (r, path.c_str ());
   }
     
-  Font::Font (Font && f) :
-    width {f.width},
-    height {f.height},
-    renderer {f.renderer},
-    texture {std::exchange (f.texture, nullptr)},
-    index {f.index}
-  {
-  }
-
-  Font::~Font ()
-  {
-    SDL_DestroyTexture (texture);
-  }
-
-  void Font::draw (char c, int x, int y)
+  void Font::draw (App * app, char c, int x, int y)
   {
     //cout << "draw '" << (int) c << "' " << x << ' ' << y << endl;
 
     auto f = index.find (c);
     if (f != index.end ())
     {
-      const SDL_Rect & src = f->second;
-      SDL_Rect dst {x, y, width, height};
-      SDL_RenderCopy (renderer, texture, &src, &dst);
+      const Rect & src = f->second;
+      app->draw (image, src, Point {x, y});
     }
   }
 
-  void Font::draw (const string & text, int x, int y)
+  void Font::draw (App * app, const string & text, int x, int y)
   {
     for (auto c : text)
     {
-      draw (c, x, y);
+      draw (app, c, x, y);
       x += width;
     }
   }
@@ -63,14 +42,14 @@ namespace ed900
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-  FontPico8::FontPico8 (SDL_Renderer * r) :
-    Font (r, "images/pico-8.png", 4, 6)
+  FontPico8::FontPico8 () :
+    Font ("images/pico-8.png", 4, 6)
   {
     for (int y = 0; y < 6; ++y)
       for (int x = 0; x < 16; ++x)
       {
         char c = 32 + 16*y + x;
-        SDL_Rect rect {x * width, y * height, width, height};
+        Rect rect {x * width, y * height, width, height};
         index.emplace (c, rect);
       }
   }
@@ -78,14 +57,14 @@ namespace ed900
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  FontTomThumb::FontTomThumb (SDL_Renderer * r) :
-    Font (r, "images/tom-thumb-new.png", 4, 6)
+  FontTomThumb::FontTomThumb () :
+    Font ("images/tom-thumb-new.png", 4, 6)
   {
     for (uint8_t y = 0; y < 4; ++y)
       for (uint8_t x = 0; x < 32; ++x)
       {
         char c = 32*y + x;
-        SDL_Rect rect {x * width, y * height, width, height};
+        Rect rect {x * width, y * height, width, height};
         index.emplace (c, rect);
       }
   }
@@ -93,14 +72,14 @@ namespace ed900
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-  FontAmstrad::FontAmstrad (SDL_Renderer * r) :
-    Font (r, "images/amstrad.png", 8, 8)
+  FontAmstrad::FontAmstrad () :
+    Font ("images/amstrad.png", 8, 8)
   {
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 16; ++x)
       {
         char c = 32 + 16*y + x;
-        SDL_Rect rect {x * width, y * height, width, height};
+        Rect rect {x * width, y * height, width, height};
         index.emplace (c, rect);
       }
   }
@@ -108,22 +87,22 @@ namespace ed900
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  FontTopaz::FontTopaz (SDL_Renderer * r) :
-    Font (r, "images/topaz.png", 8, 8)
+  FontTopaz::FontTopaz () :
+    Font ("images/topaz.png", 8, 8)
   {
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 16; ++x)
       {
         char c = 32 + 16*y + x;
-        SDL_Rect rect {x * width, y * height, width, height};
+        Rect rect {x * width, y * height, width, height};
         index.emplace (c, rect);
       }
   }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  FontRoboto::FontRoboto (SDL_Renderer * r) :
-    Font (r, "images/roboto-mono-16x32.png", 16, 32)
+  FontRoboto::FontRoboto () :
+    Font ("images/roboto-mono-16x32.png", 16, 32)
   {
     static const char ___ = 0;
     static const char _Q_ = '\'';
@@ -141,10 +120,10 @@ namespace ed900
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 13; ++x)
       {
-        char c = INDEX[y][x];
+        char c = INDEX [y][x];
         if (c != 0)
         {
-          SDL_Rect rect {x * width, y * height, width, height};
+          Rect rect {x * width, y * height, width, height};
           index.emplace (c, rect);
         }
       }
@@ -152,8 +131,8 @@ namespace ed900
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-  FontRazor1911::FontRazor1911 (SDL_Renderer * r) :
-    Font (r, "images/rzrnfnt.png", 8, 8)
+  FontRazor1911::FontRazor1911 () :
+    Font ("images/rzrnfnt.png", 8, 8)
   {
     static const char _Q_ = '\'';
     static const char _B_ = '\\';
@@ -172,7 +151,7 @@ namespace ed900
 
     for (uint8_t k = 0; k < sizeof (INDEX); ++k)
     {
-      SDL_Rect rect {k * width, 0, width, height};
+      Rect rect {k * width, 0, width, height};
       index.emplace (INDEX [k], rect);
     }
   }
@@ -181,8 +160,8 @@ namespace ed900
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-  FontMagicPockets::FontMagicPockets (SDL_Renderer * r) :
-    Font (r, "images/mpocketf.png", 16, 16)
+  FontMagicPockets::FontMagicPockets () :
+    Font ("images/mpocketf.png", 16, 16)
   {
     static const char ___ = 0;
 
@@ -196,10 +175,10 @@ namespace ed900
     for (uint8_t y = 0; y < 3; ++y)
       for (uint8_t x = 0; x < 20; ++x)
       {
-        char c = INDEX[y][x];
+        char c = INDEX [y][x];
         if (c != 0)
         {
-          SDL_Rect rect {x * width, y * height, width, height};
+          Rect rect {x * width, y * height, width, height};
           index.emplace (c, rect);
         }
       }
@@ -209,22 +188,22 @@ namespace ed900
 ////////////////////////////////////////////////////////////////////////////////
 
 #if 1
-  FontScore::FontScore (SDL_Renderer * r) :
-    Font (r, "images/score-32x32.png", 32, 32)
+  FontScore::FontScore () :
+    Font ("images/score-32x32.png", 32, 32)
   {
     static const char INDEX [] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     for (uint8_t k = 0; k < sizeof (INDEX); ++k)
     {
-      SDL_Rect rect {k * width, 0, width, height};
+      Rect rect {k * width, 0, width, height};
       index.emplace (INDEX [k], rect);
     }
   }
 #endif
 
 #if 0
-  FontScore::FontScore (SDL_Renderer * r) :
-    Font (r, "images/hooker-30x30.png", 30, 30)
+  FontScore::FontScore () :
+    Font ("images/hooker-30x30.png", 30, 30)
   {
     static const char INDEX [] =
     {
@@ -239,10 +218,10 @@ namespace ed900
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 8; ++x)
       {
-        char c = INDEX[y][x];
+        char c = INDEX [y][x];
         if (c != 0)
         {
-          SDL_Rect rect {x * width, y * height, width, height};
+          Rect rect {x * width, y * height, width, height};
           index.emplace (c, rect);
         }
       }
@@ -251,8 +230,8 @@ namespace ed900
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  FontNormal::FontNormal (SDL_Renderer * r) :
-    Font (r, "images/font199r-8x8.png", 8, 8)
+  FontNormal::FontNormal () :
+    Font ("images/font199r-8x8.png", 8, 8)
   {
     static const char ___ = 0;
     static const char _Q_ = '\'';
@@ -270,10 +249,10 @@ namespace ed900
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 10; ++x)
       {
-        char c = INDEX[y][x];
+        char c = INDEX [y][x];
         if (c != 0)
         {
-          SDL_Rect rect {x * width, y * height, width, height};
+          Rect rect {x * width, y * height, width, height};
           index.emplace (c, rect);
         }
       }
@@ -282,8 +261,8 @@ namespace ed900
 ////////////////////////////////////////////////////////////////////////////////
 
 #if 0
-  FontScore::FontScore (SDL_Renderer * r) :
-    Font (r, "images/font199r.png", 32, 32)
+  FontScore::FontScore () :
+    Font ("images/font199r.png", 32, 32)
   {
     static const char ___ = 0;
     static const char _Q_ = '\'';
@@ -301,10 +280,10 @@ namespace ed900
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 10; ++x)
       {
-        char c = INDEX[y][x];
+        char c = INDEX [y][x];
         if (c != 0)
         {
-          SDL_Rect rect {x * width, y * height, width, height};
+          Rect rect {x * width, y * height, width, height};
           index.emplace (c, rect);
         }
       }
@@ -314,8 +293,8 @@ namespace ed900
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-  FontLarge::FontLarge (SDL_Renderer * r) :
-    Font (r, "images/font254r.png", 32, 32)
+  FontLarge::FontLarge () :
+    Font ("images/font254r.png", 32, 32)
   {
     static const char ___ = 0;
     static const char _Q_ = '\'';
@@ -333,10 +312,10 @@ namespace ed900
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 10; ++x)
       {
-        char c = INDEX[y][x];
+        char c = INDEX [y][x];
         if (c != 0)
         {
-          SDL_Rect rect {x * width, y * height, width, height};
+          Rect rect {x * width, y * height, width, height};
           index.emplace (c, rect);
         }
       }
@@ -345,14 +324,14 @@ namespace ed900
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  FontCricket::FontCricket (SDL_Renderer * r) :
-    Font (r, "images/cricket.png", 8, 8)
+  FontCricket::FontCricket () :
+    Font ("images/cricket.png", 8, 8)
   {
-    static const char INDEX [] = {'0', '1', '2', '3', '(', ')'};
+    static const char INDEX [] = {'0', '1', '2', '3'};
     for (uint8_t k = 0; k < 6; ++k)
     {
-      SDL_Rect rect {k * width, 0, width, height};
-      index.emplace (INDEX[k], rect);
+      Rect rect {k * width, 0, width, height};
+      index.emplace (INDEX [k], rect);
     }
   }
 

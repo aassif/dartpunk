@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "../image.h"
 #include "menu.h"
 
 namespace ed900::menu
@@ -11,7 +12,7 @@ namespace ed900::menu
   class Players : public Abstract
   {
     private:
-      SDL_Texture * icon;
+      Image icon;
       std::vector<std::string> config;
       uint8_t count;
       std::vector<uint8_t> states;
@@ -26,7 +27,6 @@ namespace ed900::menu
 
     public:
       Players (App *);
-      ~Players ();
       virtual void select (uint8_t k);
       virtual bool confirm ();
       virtual bool cancel ();

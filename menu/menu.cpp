@@ -58,15 +58,15 @@ namespace ed900::menu
     for (uint8_t i = 0; i < n; ++i)
     {
       size_t w = items[i].size ();
-      SDL_Rect R = {64 - (2 + 4*w), 2 + 16*i, 4 + 8*w, 4 + 8};
+      Rect R = {64 - (2 + 4*w), 2 + 16*i, 4 + 8*w, 4 + 8};
 
       if (i+1 == selection)
-        app->draw (R, App::Color (i), SDL_BLENDMODE_NONE);
+        app->draw (R, App::COLORS [i], blend::NONE);
 
       app->draw (items[i], R.x + 3, R.y + 2, 1);
 
       if (i+1 != selection)
-        app->draw (R, App::Color (i), SDL_BLENDMODE_MOD);
+        app->draw (R, App::COLORS [i], blend::MODULATE);
     }
   }
 

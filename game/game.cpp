@@ -89,17 +89,17 @@ namespace ed900::game
 
   void Game::render_progress (App * app) const
   {
-    static SDL_Color ACTIVE {192, 192, 192, 255};
-    static SDL_Color INACTIVE {64, 64, 64, 255};
+    static Color ACTIVE {192, 192, 192, 255};
+    static Color INACTIVE {64, 64, 64, 255};
 
     uint8_t r = state.round + 1;
     uint8_t n = state.rounds;
 
     for (uint8_t k = 0; k < r; ++k)
-      app->draw (SDL_Rect {64 - n + 2*k, 0, 1, 1}, ACTIVE, SDL_BLENDMODE_NONE);
+      app->draw (Rect {64 - n + 2*k, 0, 1, 1}, ACTIVE, blend::NONE);
 
     for (uint8_t k = r; k < n; ++k)
-      app->draw (SDL_Rect {64 - n + 2*k, 0, 1, 1}, INACTIVE, SDL_BLENDMODE_NONE);
+      app->draw (Rect {64 - n + 2*k, 0, 1, 1}, INACTIVE, blend::NONE);
   }
 
   void Game::render_scores (App * app, bool player) const
@@ -107,7 +107,7 @@ namespace ed900::game
     static const int W = 6*4 + 1;
     static const int H = 6 + 8 + 1;
 
-    static const SDL_Rect R [] =
+    static const Rect R [] =
     {
       {0,     0,    W, H},
       {128-W, 0,    W, H},
@@ -119,10 +119,10 @@ namespace ed900::game
     for (uint8_t i = 0; i < S.size (); ++i)
     {
       const Score & s = S [i];
-      const SDL_Rect & r = R [i];
+      const Rect & r = R [i];
 
       if (i == state.player)
-        app->draw (r, App::Color (i), SDL_BLENDMODE_NONE);
+        app->draw (r, App::COLORS [i], blend::NONE);
 
       app->draw (s.name, r.x + 1, r.y + 1, 0);
       string score = to_string (s.score);
@@ -133,7 +133,7 @@ namespace ed900::game
         app->draw (score, r.x + 1 + (6 - n) * 4, r.y + 9, 0);
 
       if (i != state.player)
-        app->draw (r, App::Color (i), SDL_BLENDMODE_MOD);
+        app->draw (r, App::COLORS [i], blend::MODULATE);
     }
 
     if (player)
@@ -148,9 +148,9 @@ namespace ed900::game
   void Game::render_message (App * app) const
   {
     auto curtain = [app] () {
-      static const SDL_Rect R = {0, 0, 128, 64};
-      static const SDL_Color C = {0, 0, 0, 192};
-      app->draw (R, C, SDL_BLENDMODE_BLEND);
+      static const Rect R = {0, 0, 128, 64};
+      static const Color C = {0, 0, 0, 192};
+      app->draw (R, C, blend::BLEND);
     };
 
     if (is_finished ())

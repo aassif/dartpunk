@@ -44,17 +44,18 @@ namespace ed900
 {
   App::App (SDL_Renderer * r) :
     renderer {r},
+    matrix {},
     fonts {},
     state {State::BLUETOOTH},
     bluetooth {this},
     settings {this},
     game {nullptr}
   {
-    fonts.emplace_back (FontTomThumb {renderer});
-    fonts.emplace_back (FontTopaz {renderer});
-    fonts.emplace_back (FontScore {renderer});
-    fonts.emplace_back (FontRoboto {renderer});
-    fonts.emplace_back (FontCricket {renderer});
+    fonts.emplace_back (FontTomThumb {});
+    fonts.emplace_back (FontTopaz {});
+    fonts.emplace_back (FontScore {});
+    fonts.emplace_back (FontRoboto {});
+    fonts.emplace_back (FontCricket {});
   }
 
   App::~App ()
@@ -81,8 +82,10 @@ namespace ed900
     rgb_matrix::RuntimeOptions runtime;
     //runtime.daemon = 1;
     //runtime.gpio_slowdown = 0;
-    RGBMatrix * matrix = RGBMatrix::CreateFromOptions (options, runtime);
-    FrameCanvas * canvas = matrix->CreateFrameCanvas ();
+    RGBMatrix * m = RGBMatrix::CreateFromOptions (options, runtime);
+    FrameCanvas * canvas = m->CreateFrameCanvas ();
+#else
+    SDL_Texture * texture = SDL_CreateTexture (renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 #endif
 
     auto t0 = SDL_GetTicks ();
@@ -200,8 +203,8 @@ namespace ed900
         }
       }
 
-      SDL_SetRenderDrawColor (renderer, 0, 0, 0, 0);
-      SDL_RenderClear (renderer);
+      memset (&(matrix[0][0]), 0, 4 * WIDTH * HEIGHT);
+
       switch (state)
       {
         case State::BLUETOOTH :
@@ -218,59 +221,53 @@ namespace ed900
       }
 
 #ifdef ED900_RGB_MATRIX
-      uint8_t pixels [WIDTH * HEIGHT * 4];
-      SDL_RenderReadPixels (renderer, NULL, SDL_PIXELFORMAT_RGBA32, pixels, WIDTH * 4);
       for (uint8_t y = 0; y < HEIGHT; ++y)
         for (uint8_t x = 0; x < WIDTH; ++x)
         {
-          uint8_t * p = pixels + (y * WIDTH + x) * 4;
-          canvas->SetPixel (x, y, p[0], p[1], p[2]);
+          const Color & c = matrix [y][x];
+          canvas->SetPixel (x, y, c.r, c.g, c.b);
         }
-      canvas = matrix->SwapOnVSync (canvas);
-      SDL_Delay (40);
-#endif
-
+      canvas = m->SwapOnVSync (canvas);
+#else
+      SDL_UpdateTexture (texture, NULL, &(matrix[0][0]), WIDTH * 4);
+      SDL_RenderCopy (renderer, texture, NULL, NULL);
       SDL_RenderPresent (renderer);
+#endif
     }
+
+#ifdef ED900_RGB_MATRIX
+#else
+#endif
 
     ed900.stop ();
   }
 
-  const uint8_t App::COLORS [4][3] =
+  const Color App::COLORS [] =
   {
-    {0xEE, 0x00, 0x00}, // R // 157 0 0
-    {0x00, 0x00, 0xFF}, // B // 0 0 255
-    {0xCC, 0xCC, 0x00}, // Y // 91 91 0
-    {0x00, 0xDD, 0x00}  // G // 0 112 0
+    {0xEE, 0x00, 0x00, 0xFF}, // R // 157 0 0
+    {0x00, 0x00, 0xFF, 0xFF}, // B // 0 0 255
+    {0xCC, 0xCC, 0x00, 0xFF}, // Y // 91 91 0
+    {0x00, 0xDD, 0x00, 0xFF}  // G // 0 112 0
   };
 
-  SDL_Color App::Color (uint8_t k, float alpha)
+  void App::draw (const Rect & r, const Color & c, const Blender & b)
   {
-    const auto & c = COLORS [k];
-    return SDL_Color {c[0], c[1], c[2], static_cast<uint8_t> (round (255 * alpha))};
-  }
-
-  SDL_Texture * App::load (const string & path)
-  {
-    return IMG_LoadTexture (renderer, path.c_str ());
-  }
-
-  void App::draw (const SDL_Rect & r, const SDL_Color & c, SDL_BlendMode mode)
-  {
-    SDL_SetRenderDrawBlendMode (renderer, mode);
-    SDL_SetRenderDrawColor (renderer, c.r, c.g, c.b, c.a);
-    SDL_RenderFillRect (renderer, &r);
+    for (int y = r.y; y < r.y + r.h; ++y)
+      for (int x = r.x; x < r.x + r.w; ++x)
+        matrix [y][x] = b (c, matrix [y][x]);
   }
 
   void App::draw (const std::string & text, int x, int y, uint8_t font)
   {
     if (font < fonts.size ())
-      fonts [font].draw (text, x, y);
+      fonts [font].draw (this, text, x, y);
   }
 
-  void App::draw (const SDL_Texture * t, const SDL_Rect & r)
+  void App::draw (const Image & image, const Rect & src, const Point & dst)
   {
-    SDL_RenderCopy (renderer, (SDL_Texture *) t, NULL, &r);
+    for (int y = 0, sy = src.y, dy = dst.y; y < src.h; ++y, ++sy, ++dy)
+      for (int x = 0, sx = src.x, dx = dst.x; x < src.w; ++x, ++sx, ++dx)
+        matrix [dy][dx] = blend::BLEND (image [sy][sx], matrix [dy][dx]);
   }
 }
 

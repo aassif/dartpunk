@@ -133,7 +133,7 @@ namespace ed900::game
 
     app->draw ("BULL", 64-8, 4 + 6*8 + 1, 0);
 
-    static const SDL_Rect R [] =
+    static const Rect R [] =
     {
       {30,       3, 9, 57},
       {42,       3, 9, 57},
@@ -153,8 +153,8 @@ namespace ed900::game
     size_t p = players.size ();
     for (uint8_t i = 0; i < p; ++i)
     {
-      const SDL_Rect & r = R [P[p][i]];
-      app->draw (r, App::Color (i), SDL_BLENDMODE_NONE);
+      const Rect & r = R [P[p][i]];
+      app->draw (r, App::COLORS [i], blend::NONE);
       for (uint8_t j = 0; j < 7; ++j)
       {
         uint8_t n = min<uint8_t> (players[i].targets[j], 3);
@@ -176,9 +176,9 @@ namespace ed900::game
         uint8_t a = (j   != 0 ? 1 : 0);
         uint8_t b = (j+h != 7 ? a : 0);
 
-        static const SDL_Color BLACK {0, 0, 0, 96};
-        app->draw (SDL_Rect {30, 3+8*j+0, 68, 8*h+1}, BLACK, SDL_BLENDMODE_BLEND);
-        app->draw (SDL_Rect {30, 3+8*j+a, 68, 8*h-b}, BLACK, SDL_BLENDMODE_BLEND);
+        static const Color BLACK {0, 0, 0, 96};
+        app->draw (Rect {30, 3+8*j+0, 68, 8*h+1}, BLACK, blend::BLEND);
+        app->draw (Rect {30, 3+8*j+a, 68, 8*h-b}, BLACK, blend::BLEND);
 
         j += h;
       }

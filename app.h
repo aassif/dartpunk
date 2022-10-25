@@ -31,8 +31,12 @@ namespace ed900
         GAME = 2
       };
 
+      typedef std::array<Color, WIDTH> MatrixRow;
+      typedef std::array<MatrixRow, HEIGHT> Matrix;
+
     private:
       SDL_Renderer * renderer;
+      Matrix matrix;
       std::vector<Font> fonts;
       State state;
       Bluetooth bluetooth;
@@ -44,14 +48,12 @@ namespace ed900
       ~App ();
       SDL_Texture * load (const std::string & path);
       void draw (const std::string &, int x, int y, uint8_t font);
-      void draw (const SDL_Rect &, const SDL_Color &, SDL_BlendMode);
-      void draw (const SDL_Texture *, const SDL_Rect &);
+      void draw (const Rect &, const Color &, const Blender & = blend::NONE);
+      void draw (const Image &, const Rect & src, const Point & dst);
       void run ();
 
-    private:
-      static const uint8_t COLORS [][3];
     public:
-      static SDL_Color Color (uint8_t k, float alpha = 1.0);
+      static const Color COLORS [];
   };
 }
 

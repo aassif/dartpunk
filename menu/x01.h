@@ -12,6 +12,9 @@ namespace ed900::menu
       bool double_in;
       bool double_out;
 
+    private:
+      void render_text (const std::string &, const Rect &, const Color &, bool selected) const;
+
     public:
       X01 (App *);
       ~X01 ();

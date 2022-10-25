@@ -4,18 +4,20 @@ set (CMAKE_CXX_STANDARD 17)
 
 project (rpi-ed900)
 
+find_package (PNG REQUIRED)
 find_package (Threads REQUIRED)
 
 find_package (PkgConfig REQUIRED)
 pkg_check_modules (SYSTEMD REQUIRED libsystemd)
 pkg_check_modules (SDL2 REQUIRED sdl2)
-pkg_check_modules (SDL2_IMAGE REQUIRED SDL2_image)
 
 set (RGB_MATRIX 0)
 
 add_executable (rpi-ed900
-  ed900.cpp
   app.cpp
+  font.cpp
+  image.cpp
+  ed900.cpp
   bluetooth.cpp
   menu/menu.cpp
   menu/players.cpp
@@ -25,7 +27,6 @@ add_executable (rpi-ed900
   game/count-up.cpp
   game/x01.cpp
   game/cricket.cpp
-  font.cpp
   main.cpp
 )
 
@@ -35,7 +36,7 @@ target_include_directories (rpi-ed900 PUBLIC
   ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 
-target_link_libraries (rpi-ed900 PUBLIC ${SYSTEMD_LIBRARIES} ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} Threads::Threads)
+target_link_libraries (rpi-ed900 PUBLIC ${SYSTEMD_LIBRARIES} ${SDL2_LIBRARIES} PNG::PNG Threads::Threads)
 
 if (RGB_MATRIX)
   set (RGB_MATRIX_DIR ../rpi-rgb-led-matrix)
