@@ -69,18 +69,6 @@ namespace ed900
       std::string text () const;
   };
 
-  struct Device
-  {
-    std::string path;
-    std::string name;
-  };
-
-  struct GattChar
-  {
-    std::string path;
-    std::string uuid;
-  };
-
   class ED900
   {
     public:

@@ -3,7 +3,6 @@
 
 #include <string>
 #include <map>
-#include <functional>
 
 #include "image.h"
 

@@ -1,49 +1,42 @@
 #include <iostream>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-
 #include "app.h"
+#include "input.h"
 #include "ed900.h"
 
-#define LONG_PRESS(dt)      dt >= 1000
-#define VERY_LONG_PRESS(dt) dt >= 5000
+#define LONG_PRESS(dt)      dt >= 1000ms
+#define VERY_LONG_PRESS(dt) dt >= 5000ms
 
 #ifdef ED900_RGB_MATRIX
   #include "led-matrix.h"
   using namespace rgb_matrix;
+#else
+  #include <SDL2/SDL.h>
 #endif
 
 #ifdef ED900_RGB_MATRIX
-  #define ED900_REPEAT(e)    false
-  #define ED900_TIMESTAMP(e) e.jbutton.timestamp
-  #define ED900_BUTTON(e)    e.jbutton.button
-  #define ED900_BUTTONUP     SDL_JOYBUTTONUP
-  #define ED900_BUTTONDOWN   SDL_JOYBUTTONDOWN
-  #define ED900_BUTTON_1     0
-  #define ED900_BUTTON_2     1
-  #define ED900_BUTTON_3     2
-  #define ED900_BUTTON_4     3
-  #define ED900_BUTTON_OK    9
+  #define ED900_BUTTON_1     BTN_TRIGGER
+  #define ED900_BUTTON_2     BTN_THUMB
+  #define ED900_BUTTON_3     BTN_THUMB2
+  #define ED900_BUTTON_4     BTN_TOP
+  #define ED900_BUTTON_OK    BTN_BASE4
 #else
-  #define ED900_REPEAT(e)    e.key.repeat
-  #define ED900_TIMESTAMP(e) e.key.timestamp
-  #define ED900_BUTTON(e)    e.key.keysym.sym
-  #define ED900_BUTTONUP     SDL_KEYUP
-  #define ED900_BUTTONDOWN   SDL_KEYDOWN
-  #define ED900_BUTTON_1     SDLK_1
-  #define ED900_BUTTON_2     SDLK_2
-  #define ED900_BUTTON_3     SDLK_3
-  #define ED900_BUTTON_4     SDLK_4
-  #define ED900_BUTTON_OK    SDLK_SPACE
+  #define ED900_BUTTON_1     KEY_1
+  #define ED900_BUTTON_2     KEY_2
+  #define ED900_BUTTON_3     KEY_3
+  #define ED900_BUTTON_4     KEY_4
+  #define ED900_BUTTON_OK    KEY_SPACE
 #endif
 
 using namespace std;
+using namespace chrono;
 
 namespace ed900
 {
-  App::App (SDL_Renderer * r) :
-    renderer {r},
+
+  volatile sig_atomic_t stopped = 0;
+
+  App::App () :
     matrix {},
     fonts {},
     state {State::BLUETOOTH},
@@ -56,6 +49,10 @@ namespace ed900
     fonts.emplace_back (FontScore {});
     fonts.emplace_back (FontRoboto {});
     fonts.emplace_back (FontCricket {});
+
+    auto f = [] (int) {stopped = 1;};
+    signal (SIGINT,  f);
+    signal (SIGTERM, f);
   }
 
   App::~App ()
@@ -70,6 +67,7 @@ namespace ed900
     ed900.start ("/org/bluez/hci0");
 
 #ifdef ED900_RGB_MATRIX
+    Input input ("/dev/input/event0");
     RGBMatrix::Options options;
     options.hardware_mapping = "adafruit-hat";
     options.cols = 64;
@@ -85,85 +83,108 @@ namespace ed900
     RGBMatrix * m = RGBMatrix::CreateFromOptions (options, runtime);
     FrameCanvas * canvas = m->CreateFrameCanvas ();
 #else
+    Input input ("/dev/input/event4");
+    SDL_Init (SDL_INIT_EVERYTHING);
+    SDL_Window * window = SDL_CreateWindow ("ED900", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * SCALE, HEIGHT * SCALE, 0);
+    SDL_Renderer * renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
+    SDL_RenderSetLogicalSize (renderer, WIDTH, HEIGHT);
     SDL_Texture * texture = SDL_CreateTexture (renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 #endif
 
-    auto t0 = SDL_GetTicks ();
+    auto t0 = system_clock::now ();
 
-    bool stop = false;
-    while (! stop)
+    while (! stopped)
     {
-      SDL_Event e;
-      while (SDL_PollEvent (&e))
+      for (Input::EventPtr e = input.poll (); e; e = input.poll ())
       {
-        switch (e.type)
+        switch (e->type)
         {
-          case SDL_QUIT:
-            stop = true;
-            break;
+          case EV_KEY:
+          {
+            auto t = system_clock::time_point {seconds {e->input_event_sec} + microseconds {e->input_event_usec}};
 
-          case ED900_BUTTONDOWN:
-            if (! ED900_REPEAT (e))
-              t0 = ED900_TIMESTAMP (e);
-            break;
+            cout << libevdev_event_type_get_name (e->type) << " : "
+                 << libevdev_event_code_get_name (e->type, e->code) << " : "
+                 << e->value << endl;
 
-          case ED900_BUTTONUP:
+            switch (e->value)
             {
-              //cout << "Button: " << (uint16_t) ED900_BUTTON (e) << endl;
-              auto dt = ED900_TIMESTAMP (e) - t0;
-              switch (ED900_BUTTON (e))
+              // Down.
+              case 1:
+                t0 = t;
+                break;
+
+              // Repeat.
+              case 2:
+                break;
+
+              // Up.
+              case 0:
               {
+                //cout << "Button: " << (uint16_t) ED900_BUTTON (e) << endl;
+                auto dt = t - t0;
+                switch (e->code)
+                {
 #ifndef ED900_RGB_MATRIX
-                case SDLK_ESCAPE:
-                  stop = true;
-                  break;
+                  case KEY_ESC:
+                    stopped = 1;
+                    break;
 #endif
 
-                case ED900_BUTTON_1: settings.select (1); break;
-                case ED900_BUTTON_2: settings.select (2); break;
-                case ED900_BUTTON_3: settings.select (3); break;
-                case ED900_BUTTON_4: settings.select (4); break;
+                  case ED900_BUTTON_1: settings.select (1); break;
+                  case ED900_BUTTON_2: settings.select (2); break;
+                  case ED900_BUTTON_3: settings.select (3); break;
+                  case ED900_BUTTON_4: settings.select (4); break;
 
-                case ED900_BUTTON_OK:
-                  switch (state)
-                  {
-                    case State::BLUETOOTH:
-                      if (VERY_LONG_PRESS (dt))
-                        stop = true;
-                      break;
+                  case ED900_BUTTON_OK:
+                    switch (state)
+                    {
+                      case State::BLUETOOTH:
+                        if (VERY_LONG_PRESS (dt))
+                          stopped = 1;
+                        break;
 
-                    case State::SETTINGS:
-                      if (VERY_LONG_PRESS (dt))
-                        stop = true;
-                      else if (LONG_PRESS (dt))
-                        settings.cancel ();
-                      else
-                      {
-                        game::Game * g = settings.confirm ();
-                        if (g)
+                      case State::SETTINGS:
+                        if (VERY_LONG_PRESS (dt))
+                          stopped = 1;
+                        else if (LONG_PRESS (dt))
+                          settings.cancel ();
+                        else
                         {
-                          game = g;
-                          state = State::GAME;
+                          game::Game * g = settings.confirm ();
+                          if (g)
+                          {
+                            game = g;
+                            state = State::GAME;
+                          }
                         }
-                      }
-                      break;
+                        break;
 
-                    case State::GAME:
-                      if (VERY_LONG_PRESS (dt))
-                        stop = true;
-                      else if (LONG_PRESS (dt))
-                      {
-                        delete game;
-                        state = State::SETTINGS;
-                      }
-                      else
-                        game->button (Button::NEXT);
-                      break;
-                  }
-                  break;
+                      case State::GAME:
+                        if (VERY_LONG_PRESS (dt))
+                          stopped = 1;
+                        else if (LONG_PRESS (dt))
+                        {
+                          delete game;
+                          state = State::SETTINGS;
+                        }
+                        else
+                        {
+                          if (game->button (Button::NEXT))
+                          {
+                            delete game;
+                            game = nullptr;
+                            state = State::SETTINGS;
+                          }
+                        }
+                        break;
+                    }
+                    break;
+                }
+                break;
               }
             }
-            break;
+          }
         }
       }
 
@@ -233,10 +254,17 @@ namespace ed900
       SDL_RenderCopy (renderer, texture, NULL, NULL);
       SDL_RenderPresent (renderer);
 #endif
+
+      this_thread::sleep_for (20ms);
     }
 
 #ifdef ED900_RGB_MATRIX
+    delete m;
 #else
+    SDL_DestroyTexture (texture);
+    SDL_DestroyRenderer (renderer);
+    SDL_DestroyWindow (window);
+    SDL_Quit ();
 #endif
 
     ed900.stop ();
@@ -269,5 +297,6 @@ namespace ed900
       for (int x = 0, sx = src.x, dx = dst.x; x < src.w; ++x, ++sx, ++dx)
         matrix [dy][dx] = blend::BLEND (image [sy][sx], matrix [dy][dx]);
   }
+
 }
 

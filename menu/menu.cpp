@@ -57,8 +57,8 @@ namespace ed900::menu
 
     for (uint8_t i = 0; i < n; ++i)
     {
-      size_t w = items[i].size ();
-      Rect R = {64 - (2 + 4*w), 2 + 16*i, 4 + 8*w, 4 + 8};
+      uint8_t w = items[i].size ();
+      Rect R {64 - (2 + 4*w), 2 + 16*i, 4 + 8*w, 4 + 8};
 
       if (i+1 == selection)
         app->draw (R, App::COLORS [i], blend::NONE);

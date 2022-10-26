@@ -30,11 +30,7 @@ namespace ed900::game
         array<uint8_t, 6> t6;
         copy_n (t20.begin (), 6, t6.begin ());
         sort (t6.begin (), t6.end (), greater<uint8_t> ());
-
-        array<uint8_t, 7> t7;
-        copy (t6.begin (), t6.end (), t7.begin ());
-        t7[6] = 25;
-        return t7;
+        return {t6[0], t6[1], t6[2], t6[3], t6[4], t6[5], 25};
       }
     }
 

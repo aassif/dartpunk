@@ -9,14 +9,13 @@ find_package (Threads REQUIRED)
 
 find_package (PkgConfig REQUIRED)
 pkg_check_modules (SYSTEMD REQUIRED libsystemd)
-pkg_check_modules (SDL2 REQUIRED sdl2)
-
-set (RGB_MATRIX 0)
+pkg_check_modules (EVDEV REQUIRED libevdev)
 
 add_executable (rpi-ed900
   app.cpp
   font.cpp
   image.cpp
+  input.cpp
   ed900.cpp
   bluetooth.cpp
   menu/menu.cpp
@@ -32,11 +31,15 @@ add_executable (rpi-ed900
 
 target_include_directories (rpi-ed900 PUBLIC
   ${SYSTEMD_INCLUDE_DIRS}
-  ${SDL2_INCLUDE_DIRS}
-  ${SDL2_IMAGE_INCLUDE_DIRS}
+  ${EVDEV_INCLUDE_DIRS}
 )
 
-target_link_libraries (rpi-ed900 PUBLIC ${SYSTEMD_LIBRARIES} ${SDL2_LIBRARIES} PNG::PNG Threads::Threads)
+target_link_libraries (rpi-ed900 PUBLIC
+  Threads::Threads
+  PNG::PNG
+  ${SYSTEMD_LIBRARIES}
+  ${EVDEV_LIBRARIES}
+)
 
 if (RGB_MATRIX)
   set (RGB_MATRIX_DIR ../rpi-rgb-led-matrix)
@@ -47,5 +50,9 @@ if (RGB_MATRIX)
 
   set (RGB_MATRIX_LIBRARIES -L${RGB_MATRIX_DIR}/lib -lrgbmatrix)
   target_link_libraries (rpi-ed900 PUBLIC ${RGB_MATRIX_LIBRARIES})
+else ()
+  pkg_check_modules (SDL2 REQUIRED sdl2)
+  target_include_directories (rpi-ed900 PUBLIC ${SDL2_INCLUDE_DIRS})
+  target_link_libraries (rpi-ed900 PUBLIC ${SDL2_LIBRARIES})
 endif ()
 

@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include <SDL2/SDL.h>
-
 #include "font.h"
 #include "bluetooth.h"
 #include "settings.h"
@@ -35,7 +33,6 @@ namespace ed900
       typedef std::array<MatrixRow, HEIGHT> Matrix;
 
     private:
-      SDL_Renderer * renderer;
       Matrix matrix;
       std::vector<Font> fonts;
       State state;
@@ -44,9 +41,8 @@ namespace ed900
       game::Game * game;
 
     public:
-      App (SDL_Renderer *);
+      App ();
       ~App ();
-      SDL_Texture * load (const std::string & path);
       void draw (const std::string &, int x, int y, uint8_t font);
       void draw (const Rect &, const Color &, const Blender & = blend::NONE);
       void draw (const Image &, const Rect & src, const Point & dst);

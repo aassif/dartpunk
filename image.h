@@ -12,12 +12,12 @@ namespace ed900
 
   struct Point
   {
-    int16_t x, y;
+    int x, y;
   };
 
   struct Rect : public Point
   {
-    uint16_t w, h;
+    int w, h;
   };
 
   struct Color {uint8_t r, g, b, a;};

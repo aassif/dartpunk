@@ -1,5 +1,10 @@
+#include <chrono>
+
 #include "app.h"
 #include "bluetooth.h"
+
+using namespace std;
+using namespace chrono;
 
 namespace ed900
 {
@@ -18,8 +23,9 @@ namespace ed900
 
     app->draw (logo, {0, 0, W, H}, {X, Y});
 
-    float t = SDL_GetTicks () / 500.0;
-    uint8_t c = static_cast<uint8_t> (127.5 + 127.5 * sin (t));
+    static auto t0 = system_clock::now ();
+    auto dt = duration_cast<milliseconds> (system_clock::now () - t0);
+    uint8_t c = static_cast<uint8_t> (127.5 + 127.5 * sin (dt.count () / 500.0));
     app->draw ({X, Y, W, H}, Color {c, c, 255, 255}, blend::MODULATE);
   }
 }

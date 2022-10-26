@@ -1,8 +1,6 @@
 #ifndef __ED900_MENU_PLAYERS__
 #define __ED900_MENU_PLAYERS__
 
-#include <SDL2/SDL.h>
-
 #include "../image.h"
 #include "menu.h"
 
