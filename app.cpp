@@ -103,9 +103,11 @@ namespace ed900
           {
             auto t = system_clock::time_point {seconds {e->input_event_sec} + microseconds {e->input_event_usec}};
 
+#if 0
             cout << libevdev_event_type_get_name (e->type) << " : "
                  << libevdev_event_code_get_name (e->type, e->code) << " : "
                  << e->value << endl;
+#endif
 
             switch (e->value)
             {

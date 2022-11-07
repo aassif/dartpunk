@@ -147,10 +147,12 @@ namespace ed900::game
 
   void Game::render_message (App * app) const
   {
-    auto curtain = [app] () {
+    auto curtain = [app] (const string & text) {
       static const Rect R = {0, 0, 128, 64};
       static const Color C = {0, 0, 0, 192};
       app->draw (R, C, blend::BLEND);
+      uint8_t n = text.size ();
+      app->draw (text, 64 - n*16/2, 18, 3);
     };
 
     if (is_finished ())
@@ -163,29 +165,14 @@ namespace ed900::game
       for (uint8_t k = 0; k < S.size (); ++k)
         if (S[k].score == m) W.push_back (k);
 
-      curtain ();
       if (W.size () == 1)
-      {
-        uint8_t w = W[0];
-        const string & name = S[w].name;
-        uint8_t n = name.size ();
-        app->draw (name, 64 - n*16/2, 18, 3);
-      }
+        curtain (S[W[0]].name);
       else
-      {
-        static string DRAW = "MATCH NUL";
-        static uint8_t n = DRAW.size ();
-        app->draw (DRAW, 64 - n*16/2, 18, 3);
-      }
+        curtain ("DRAW");
     }
     else
       if (state.is_waiting ())
-      {
-        curtain ();
-        static string NEXT = "SUIVANT";
-        static uint8_t n = NEXT.size ();
-        app->draw (NEXT, 64 - n*16/2, 18, 3);
-      }
+        curtain ("NEXT");
   }
 
   bool Game::HighScore (const Score & s1, const Score & s2)

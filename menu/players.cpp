@@ -13,7 +13,7 @@ namespace ed900::menu
   Players::Players (App * app) :
     Abstract {app},
     icon {"images/player.png"},
-    config {"P1", "P2", "P3", "P4"},
+    config {},
     count {0},
     states {},
     result {}
@@ -21,6 +21,10 @@ namespace ed900::menu
     ifstream ifs ("names.txt");
     for (string line; getline (ifs, line);)
       config.push_back (line);
+
+    static const vector<string> CONFIG {"P1", "P2", "P3", "P4"};
+    if (config.size () < 4)
+      copy (CONFIG.begin () + config.size (), CONFIG.end (), back_inserter (config));
 
     states.resize (config.size ());
   }
@@ -142,11 +146,12 @@ namespace ed900::menu
 
   void Players::render_names () const
   {
-    string title = "Player" + to_string (1 + result.size ());
-    app->draw (title, 64-7*4, 2, 1);
+    string title = "Player " + to_string (1 + result.size ());
+    uint8_t w = title.size ();
+    app->draw (title, 64-w*4, 2, 1);
 
     const Color & color = App::COLORS [result.size ()];
-    app->draw ({64-7*4, 2, 7*8, 10}, color, blend::MODULATE);
+    app->draw ({64-w*4, 2, w*8, 10}, color, blend::MODULATE);
 
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 4; ++x)

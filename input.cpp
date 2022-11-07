@@ -14,7 +14,6 @@ namespace ed900
     device {nullptr}
   {
     int fd = open (path.c_str (), O_RDONLY|O_NONBLOCK);
-
     int rc = libevdev_new_from_fd (fd, &device);
     if (rc < 0)
       throw std::runtime_error (strerror (-rc));
