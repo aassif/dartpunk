@@ -67,7 +67,7 @@ namespace ed900::game
   void Cricket::dart_score (uint8_t target, uint8_t multiplier)
   {
     auto target_is_open = [target] (const Player & p) {
-      return p.targets[target] < 3u;
+      return p.targets[target] >= 3u;
     };
 
     switch (mode)
@@ -75,13 +75,13 @@ namespace ed900::game
       case STANDARD:
       case RANDOM:
       case HIDDEN:
-        if (any_of (players.begin (), players.end (), target_is_open))
+        if (! all_of (players.begin (), players.end (), target_is_open))
           players[state.player].score += targets[target] * multiplier;
         break;
 
       case CUTTHROAT:
         for (auto & p : players)
-          if (target_is_open (p))
+          if (! target_is_open (p))
             p.score += targets[target] * multiplier;
         break;
     }
@@ -112,8 +112,8 @@ namespace ed900::game
   bool Cricket::is_finished () const
   {
     auto player_has_finished = [this] (const Player & p) {
-      auto target_is_open = [] (uint8_t t) {return t < 3u;};
-      return none_of (p.targets.begin (), p.targets.end (), target_is_open) && p.score == best_score ();
+      auto target_is_open = [] (uint8_t t) {return t >= 3u;};
+      return all_of (p.targets.begin (), p.targets.end (), target_is_open) && p.score == best_score ();
     };
 
     return state.is_finished () || any_of (players.begin (), players.end (), player_has_finished);
@@ -159,8 +159,8 @@ namespace ed900::game
     }
 
     auto target_is_closed = [this] (uint8_t target) {
-      auto target_is_open = [target] (const Player & p) {return p.targets[target] < 3u;};
-      return none_of (players.begin (), players.end (), target_is_open);
+      auto target_is_open = [target] (const Player & p) {return p.targets[target] >= 3u;};
+      return all_of (players.begin (), players.end (), target_is_open);
     };
 
     for (uint8_t j = 0; j < 7;)
