@@ -396,9 +396,9 @@ cout << path << " : " << gatt_char_uuid << endl;
     vector<uint8_t> d {data, data + n};
 
     // Previous timestamp.
-    static chrono::system_clock::time_point t0;
+    static chrono::steady_clock::time_point t0;
     // Event timestamp.
-    auto t = system_clock::now ();
+    auto t = steady_clock::now ();
 
     if (n == 10 && t > t0 + 500ms)
     {

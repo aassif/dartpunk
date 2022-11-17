@@ -91,7 +91,7 @@ namespace ed900
     SDL_Texture * texture = SDL_CreateTexture (renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 #endif
 
-    auto t0 = system_clock::now ();
+    auto t0 = steady_clock::now ();
 
     while (! stopped)
     {
@@ -101,7 +101,7 @@ namespace ed900
         {
           case EV_KEY:
           {
-            auto t = system_clock::time_point {seconds {e->input_event_sec} + microseconds {e->input_event_usec}};
+            auto t = steady_clock::time_point {seconds {e->input_event_sec} + microseconds {e->input_event_usec}};
 
 #if 0
             cout << libevdev_event_type_get_name (e->type) << " : "
