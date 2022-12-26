@@ -184,6 +184,7 @@ namespace ed900::game
   void Cricket::render (App * app) const
   {
     render_progress (app);
+    render_history (app);
     render_scores (app);
     render_columns (app);
     render_message (app);

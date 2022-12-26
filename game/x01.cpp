@@ -86,6 +86,7 @@ namespace ed900::game
   void X01::render (App * app) const
   {
     render_progress (app);
+    render_history (app);
     render_scores (app, true);
     render_message (app);
   }

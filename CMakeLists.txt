@@ -16,6 +16,7 @@ add_executable (rpi-ed900
   font.cpp
   image.cpp
   input.cpp
+  event.cpp
   ed900.cpp
   bluetooth.cpp
   menu/menu.cpp

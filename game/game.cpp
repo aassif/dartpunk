@@ -46,7 +46,8 @@ namespace ed900::game
   }
 
   Game::Game (uint8_t players, uint8_t rounds) :
-    state {players, rounds}
+    state {players, rounds},
+    history {}
   {
   }
 
@@ -63,6 +64,7 @@ namespace ed900::game
     if (! state.is_waiting () && ! is_finished ())
     {
       dart (e.value, e.multiplier);
+      history.push_back (e);
       ++state;
     }
   }
@@ -76,6 +78,7 @@ namespace ed900::game
           return true;
 
         state.next ();
+        history.clear ();
         return false;
 
       case Button::CANCEL:
@@ -100,6 +103,14 @@ namespace ed900::game
 
     for (uint8_t k = r; k < n; ++k)
       app->draw (Rect {64 - n + 2*k, 0, 1, 1}, INACTIVE, blend::NONE);
+  }
+
+  void Game::render_history (App * app) const
+  {
+    uint8_t n = min<uint8_t> (3, history.size ());
+
+    for (uint8_t i = 0; i < n; ++i)
+      app->draw (history [i].text (true), 0, 23 + 6 * i, 0);
   }
 
   void Game::render_scores (App * app, bool player) const

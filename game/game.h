@@ -1,7 +1,9 @@
 #ifndef __ED900_GAME__
 #define __ED900_GAME__
 
-#include "../ed900.h"
+#include <vector>
+
+#include "../event.h"
 
 namespace ed900
 {
@@ -39,6 +41,7 @@ namespace ed900::game
 
     protected:
       State state;
+      std::vector<DartEvent> history;
 
     protected:
       virtual std::vector<Score> scores () const = 0;
@@ -46,6 +49,7 @@ namespace ed900::game
       virtual void dart (uint8_t value, uint8_t multiplier) = 0;
       virtual void cancel () = 0;
       void render_progress (App *) const;
+      void render_history (App *) const;
       void render_scores (App *, bool player = false) const;
       void render_message (App *) const;
 

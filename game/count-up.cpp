@@ -36,6 +36,7 @@ namespace ed900::game
   void CountUp::render (App * app) const
   {
     render_progress (app);
+    render_history (app);
     render_scores (app, true);
     render_message (app);
   }

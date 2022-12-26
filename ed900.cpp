@@ -9,62 +9,14 @@
 #define BLUEZ_GATT_SERVICE "org.bluez.GattService1"
 #define BLUEZ_GATT_CHARACTERISTIC "org.bluez.GattCharacteristic1"
 
+#define ED900_COOLDOWN 1000ms
+
 using namespace std;
 using namespace chrono;
 using namespace literals::chrono_literals;
 
 namespace ed900
 {
-
-  Event::Event (EventType t) :
-    type {t}
-  {
-  }
-
-  ConnectionEvent::ConnectionEvent (bool c) :
-    Event {EventType::CONNECTION},
-    connected {c}
-  {
-  }
-
-  DartEvent::DartEvent (uint8_t v, uint8_t m) :
-    Event {EventType::DART},
-    value {v},
-    multiplier {m}
-  {
-  }
-
-  string prefix (uint8_t m, bool abbr)
-  {
-    switch (m)
-    {
-      case 1: return "";
-      case 2: return abbr ? "D" : "Double ";
-      case 3: return abbr ? "T" : "Triple ";
-      default: return "?";
-    }
-  }
-
-  string DartEvent::text (bool abbr) const
-  {
-    return prefix (multiplier, abbr) + to_string (value);
-  }
-    
-  ButtonEvent::ButtonEvent (Button b) :
-    Event {EventType::BUTTON},
-    button {b}
-  {
-  }
-
-  string ButtonEvent::text () const
-  {
-    switch (button)
-    {
-      case Button::NEXT:   return "NEXT";
-      case Button::CANCEL: return "CANCEL";
-      default:             return "?";
-    }
-  }
 
   ED900::ED900 () :
     bus {nullptr},
@@ -394,16 +346,15 @@ cout << path << " : " << gatt_char_uuid << endl;
     size_t n = 0;
     int r = sd_bus_message_read_array (m, 'y', (const void **) &data, &n);
     vector<uint8_t> d {data, data + n};
+    ED900::Dump (d);
 
     // Previous timestamp.
     static chrono::steady_clock::time_point t0;
     // Event timestamp.
     auto t = steady_clock::now ();
 
-    if (n == 10 && t > t0 + 500ms)
+    if (n == 10 && t > t0 + ED900_COOLDOWN)
     {
-      ED900::Dump (d);
-
       uint32_t id = d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24);
       uint16_t reserved1 = d[4] | (d[5] << 8);
       uint8_t multiplier = d[6];
@@ -461,7 +412,7 @@ cout << path << " : " << gatt_char_uuid << endl;
 
           // Miss.
           case 0xEEEE:
-            emitDartEvent (0, 1);
+            emitDartEvent (0, 0);
             break;
 
           // Next.
@@ -471,10 +422,6 @@ cout << path << " : " << gatt_char_uuid << endl;
             break;
         }
       }
-    }
-    else
-    {
-      ED900::Dump (d);
     }
 
     // Update timestamp.
