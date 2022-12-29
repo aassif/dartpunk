@@ -1,6 +1,7 @@
 #ifndef __ED900_GAME__
 #define __ED900_GAME__
 
+#include <stack>
 #include <vector>
 
 #include "../event.h"
@@ -22,11 +23,11 @@ namespace ed900::game
           uint8_t round;
           uint8_t players;
           uint8_t player;
-          uint8_t dart;
+          std::vector<DartEvent> darts;
 
         public:
           State (uint8_t players, uint8_t rounds);
-          State & operator++ ();
+          State & operator+= (const DartEvent &);
           bool is_waiting () const;
           bool is_finished () const;
           void next ();
@@ -41,15 +42,16 @@ namespace ed900::game
 
     protected:
       State state;
-      std::vector<DartEvent> history;
+      std::stack<State> stack;
 
     protected:
       virtual std::vector<Score> scores () const = 0;
       virtual uint16_t best_score () const;
       virtual void dart (uint8_t value, uint8_t multiplier) = 0;
-      virtual void cancel () = 0;
+      virtual void push () = 0;
+      virtual void pop () = 0;
       void render_progress (App *) const;
-      void render_history (App *) const;
+      void render_darts (App *) const;
       void render_scores (App *, bool player = false) const;
       void render_message (App *) const;
 

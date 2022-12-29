@@ -18,17 +18,21 @@ namespace ed900::game
           Player (const std::string &, uint16_t start);
       };
 
+      typedef std::vector<Player> Players;
+
     private:
       uint16_t start;
       bool double_in;
       bool double_out;
-      std::vector<Player> players;
+      Players players;
+      std::stack<Players> stack;
 
     private:
       uint16_t best_score () const;
       std::vector<Score> scores () const;
       void dart (uint8_t value, uint8_t multiplier);
-      void cancel ();
+      void push ();
+      void pop ();
 
     public:
       X01 (const std::vector<std::string> & players, uint16_t start, bool double_in, bool double_out);

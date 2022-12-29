@@ -9,12 +9,17 @@ namespace ed900::game
   class CountUp : public Game
   {
     private:
-      std::vector<Score> players;
+      typedef std::vector<Score> Players;
+
+    private:
+      Players players;
+      std::stack<Players> stack;
 
     private:
       std::vector<Score> scores () const;
       void dart (uint8_t value, uint8_t multiplier);
-      void cancel ();
+      void push ();
+      void pop ();
 
     public:
       CountUp (const std::vector<std::string> & players);

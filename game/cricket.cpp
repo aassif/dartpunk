@@ -47,7 +47,8 @@ namespace ed900::game
     Game {names.size (), 20},
     mode {m},
     targets {Targets (m)},
-    players {}
+    players {},
+    stack {}
   {
     for (auto & n : names)
       players.push_back (Player {n});
@@ -105,8 +106,15 @@ namespace ed900::game
     }
   }
 
-  void Cricket::cancel ()
+  void Cricket::push ()
   {
+    stack.push (players);
+  }
+
+  void Cricket::pop ()
+  {
+    players = stack.top ();
+    stack.pop ();
   }
 
   bool Cricket::is_finished () const
@@ -184,7 +192,7 @@ namespace ed900::game
   void Cricket::render (App * app) const
   {
     render_progress (app);
-    render_history (app);
+    render_darts (app);
     render_scores (app);
     render_columns (app);
     render_message (app);

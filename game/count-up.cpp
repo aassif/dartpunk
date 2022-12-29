@@ -8,7 +8,8 @@ namespace ed900::game
 
   CountUp::CountUp (const vector<string> & names) :
     Game {names.size (), 8},
-    players {}
+    players {},
+    stack {}
   {
     for (auto & n : names)
       players.push_back ({n, 0});
@@ -19,8 +20,15 @@ namespace ed900::game
     players[state.player].score += v * m;
   }
 
-  void CountUp::cancel ()
+  void CountUp::push ()
   {
+    stack.push (players);
+  }
+
+  void CountUp::pop ()
+  {
+    players = stack.top ();
+    stack.pop ();
   }
 
   bool CountUp::is_finished () const
@@ -36,7 +44,7 @@ namespace ed900::game
   void CountUp::render (App * app) const
   {
     render_progress (app);
-    render_history (app);
+    render_darts (app);
     render_scores (app, true);
     render_message (app);
   }

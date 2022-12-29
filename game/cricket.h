@@ -29,17 +29,21 @@ namespace ed900::game
           Player (const std::string &);
       };
 
+      typedef std::vector<Player> Players;
+
     private:
       Mode mode;
       std::array<uint8_t, 7> targets;
-      std::vector<Player> players;
+      Players players;
+      std::stack<Players> stack;
 
     private:
       uint16_t best_score () const;
       std::vector<Score> scores () const;
       void dart_score (uint8_t target, uint8_t multiplier);
       void dart (uint8_t value, uint8_t multiplier);
-      void cancel ();
+      void push ();
+      void pop ();
       void render_columns (App *) const;
 
     public:

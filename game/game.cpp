@@ -14,29 +14,29 @@ namespace ed900::game
     round {0},
     players {p},
     player {0},
-    dart {0}
+    darts {}
   {
   }
     
-  Game::State & Game::State::operator++ ()
+  Game::State & Game::State::operator+= (const DartEvent & e)
   {
-    ++dart;
+    darts.push_back (e);
     return *this;
   }
 
   bool Game::State::is_waiting () const
   {
-    return dart >= 3;
+    return darts.size () >= 3;
   }
 
   bool Game::State::is_finished () const
   {
-    return round >= rounds || (round == rounds-1 && player == players-1 && dart >= 3);
+    return round >= rounds || (round == rounds-1 && player == players-1 && is_waiting ());
   }
 
   void Game::State::next ()
   {
-    dart = 0;
+    darts.clear ();
     ++player;
     if (player == players)
     {
@@ -47,7 +47,7 @@ namespace ed900::game
 
   Game::Game (uint8_t players, uint8_t rounds) :
     state {players, rounds},
-    history {}
+    stack {}
   {
   }
 
@@ -63,9 +63,11 @@ namespace ed900::game
 
     if (! state.is_waiting () && ! is_finished ())
     {
+      stack.push (state);
+      state += e;
+
+      push ();
       dart (e.value, e.multiplier);
-      history.push_back (e);
-      ++state;
     }
   }
 
@@ -74,15 +76,27 @@ namespace ed900::game
     switch (e.button)
     {
       case Button::NEXT:
+      {
         if (is_finished ())
           return true;
 
+        stack.push (state);
+        push ();
+        for (uint8_t k = state.darts.size (); k < 3; ++k)
+          dart (0, 0);
+
         state.next ();
-        history.clear ();
         return false;
+      }
 
       case Button::CANCEL:
-        cancel ();
+        if (! stack.empty ())
+        {
+          pop ();
+
+          state = stack.top ();
+          stack.pop ();
+        }
         return false;
 
       default:
@@ -105,12 +119,12 @@ namespace ed900::game
       app->draw (Rect {64 - n + 2*k, 0, 1, 1}, INACTIVE, blend::NONE);
   }
 
-  void Game::render_history (App * app) const
+  void Game::render_darts (App * app) const
   {
-    uint8_t n = min<uint8_t> (3, history.size ());
+    uint8_t n = min<uint8_t> (3, state.darts.size ());
 
     for (uint8_t i = 0; i < n; ++i)
-      app->draw (history [i].text (true), 0, 23 + 6 * i, 0);
+      app->draw (state.darts [i].text (true), 0, 23 + 6 * i, 0);
   }
 
   void Game::render_scores (App * app, bool player) const

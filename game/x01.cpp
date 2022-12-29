@@ -19,7 +19,8 @@ namespace ed900::game
     start {start},
     double_in {in},
     double_out {out},
-    players {}
+    players {},
+    stack {}
   {
     for (auto & n : names)
       players.push_back ({n, start});
@@ -42,14 +43,15 @@ namespace ed900::game
 
     auto score = [&] () {
       p.score -= d;
-      if (state.dart == 2)
+      if (state.darts.size () == 3)
         p.busted = p.score;
     };
 
     auto bust = [&] ()
     {
       p.score = p.busted;
-      state.dart = 2;
+      while (state.darts.size () < 3)
+        state.darts.push_back ({0, 0});
     };
 
     if (p.score == start)
@@ -68,8 +70,15 @@ namespace ed900::game
       return bust ();
   }
 
-  void X01::cancel ()
+  void X01::push ()
   {
+    stack.push (players);
+  }
+
+  void X01::pop ()
+  {
+    players = stack.top ();
+    stack.pop ();
   }
 
   bool X01::is_finished () const
@@ -86,7 +95,7 @@ namespace ed900::game
   void X01::render (App * app) const
   {
     render_progress (app);
-    render_history (app);
+    render_darts (app);
     render_scores (app, true);
     render_message (app);
   }
