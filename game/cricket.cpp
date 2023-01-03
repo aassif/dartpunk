@@ -129,10 +129,17 @@ namespace ed900::game
 
   void Cricket::render_columns (App * app) const
   {
+    auto hidden = [this] (uint8_t i) {
+      auto target_is_found = [i] (const Player & p) {
+        return p.targets[i] > 0u;
+      };
+      return mode == HIDDEN && none_of (players.begin (), players.end (), target_is_found);
+    };
+
     for (uint8_t i = 0; i < 6; ++i)
     {
-      string item = to_string (targets [i]);
-      app->draw (item, 64 - (targets[i] < 10 ? 4 : 8), 4 + i*8, 1);
+      string item = hidden (i) ? "?" : to_string (targets [i]);
+      app->draw (item, 64 - 4 * item.size (), 4 + i*8, 1);
     }
 
     app->draw ("BULL", 64-8, 4 + 6*8 + 1, 0);
