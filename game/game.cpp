@@ -113,10 +113,10 @@ namespace ed900::game
     uint8_t n = state.rounds;
 
     for (uint8_t k = 0; k < r; ++k)
-      app->draw (Rect {64 - n + 2*k, 0, 1, 1}, ACTIVE, blend::NONE);
+      app->draw (Rect {64 - n + 2*k, 0, 1, 1}, ACTIVE);
 
     for (uint8_t k = r; k < n; ++k)
-      app->draw (Rect {64 - n + 2*k, 0, 1, 1}, INACTIVE, blend::NONE);
+      app->draw (Rect {64 - n + 2*k, 0, 1, 1}, INACTIVE);
   }
 
   void Game::render_darts (App * app) const
@@ -145,20 +145,20 @@ namespace ed900::game
     {
       const Score & s = S [i];
       const Rect & r = R [i];
+      const Color & c = App::COLORS [i];
+      bool active = (i == state.player);
 
-      if (i == state.player)
-        app->draw (r, App::COLORS [i], blend::NONE);
+      if (active)
+        app->draw (r, c);
 
-      app->draw (s.name, r.x + 1, r.y + 1, 0);
+      Blender b = active ? blend::ALPHA : blend::ModAlpha (c);
+      app->draw (s.name, r.x + 1, r.y + 1, 0, b);
       string score = to_string (s.score);
       size_t n = score.size ();
       if (n <= 3)
-        app->draw (score, r.x + 1 + (3 - n) * 8, r.y + 7, 1);
+        app->draw (score, r.x + 1 + (3 - n) * 8, r.y + 7, 1, b);
       else
-        app->draw (score, r.x + 1 + (6 - n) * 4, r.y + 9, 0);
-
-      if (i != state.player)
-        app->draw (r, App::COLORS [i], blend::MODULATE);
+        app->draw (score, r.x + 1 + (6 - n) * 4, r.y + 9, 0, b);
     }
 
     if (player)
@@ -173,9 +173,9 @@ namespace ed900::game
   void Game::render_message (App * app) const
   {
     auto curtain = [app] (const string & text) {
-      static const Rect R = {0, 0, 128, 64};
-      static const Color C = {0, 0, 0, 192};
-      app->draw (R, C, blend::BLEND);
+      static const Rect R {0, 0, 128, 64};
+      static const Color C {0, 0, 0, 192};
+      app->draw (R, C, blend::ALPHA);
       uint8_t n = text.size ();
       app->draw (text, 64 - n*16/2, 18, 3);
     };

@@ -21,8 +21,8 @@ namespace ed900
 
     public:
       Font (const std::string & path, uint8_t w, uint8_t h);
-      void draw (App *, char, int x, int y);
-      void draw (App *, const std::string &, int x, int y);
+      void draw (App *, char, int x, int y, const Blender & = blend::ALPHA);
+      void draw (App *, const std::string &, int x, int y, const Blender & b = blend::ALPHA);
   };
 
 /*

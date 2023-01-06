@@ -188,8 +188,8 @@ namespace ed900::game
         uint8_t b = (j+h != 7 ? a : 0);
 
         static const Color BLACK {0, 0, 0, 96};
-        app->draw (Rect {30, 3+8*j+0, 68, 8*h+1}, BLACK, blend::BLEND);
-        app->draw (Rect {30, 3+8*j+a, 68, 8*h-b}, BLACK, blend::BLEND);
+        app->draw (Rect {30, 3+8*j+0, 68, 8*h+1}, BLACK, blend::ALPHA);
+        app->draw (Rect {30, 3+8*j+a, 68, 8*h-b}, BLACK, blend::ALPHA);
 
         j += h;
       }

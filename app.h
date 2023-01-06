@@ -43,9 +43,9 @@ namespace ed900
     public:
       App ();
       ~App ();
-      void draw (const std::string &, int x, int y, uint8_t font);
+      void draw (const std::string &, int x, int y, uint8_t font, const Blender & = blend::ALPHA);
       void draw (const Rect &, const Color &, const Blender & = blend::NONE);
-      void draw (const Image &, const Rect & src, const Point & dst);
+      void draw (const Image &, const Rect & src, const Point & dst, const Blender & = blend::ALPHA);
       void run ();
 
     public:

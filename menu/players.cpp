@@ -126,32 +126,29 @@ namespace ed900::menu
       for (uint8_t x = 0; x < 2; ++x)
       {
         uint8_t n = 2*y + x + 1;
+        const Color & c = App::COLORS [n-1];
         bool active = (n == selection);
 
-        Rect R {64*x, 32*y, 64, 32};
+        Rect r {64*x, 32*y, 64, 32};
 
         if (active)
-          app->draw (R, App::COLORS [n-1], blend::NONE);
+          app->draw (r, c);
+
+        Blender b = active ? blend::ALPHA : blend::ModAlpha (c);
 
         for (uint8_t i = 0; i < n; ++i)
         {
-          Point dst {R.x + 32 - 5*n + 10*i, R.y + 8};
-          app->draw (icon, {0, 0, 9, 16}, dst);
+          Point dst {r.x + 32 - 5*n + 10*i, r.y + 8};
+          app->draw (icon, {0, 0, 9, 16}, dst, b);
         }
-
-        if (! active)
-          app->draw (R, App::COLORS [n-1], blend::MODULATE);
       }
   }
 
   void Players::render_names () const
   {
     string title = "Player " + to_string (1 + result.size ());
-    uint8_t w = title.size ();
-    app->draw (title, 64-w*4, 2, 1);
-
     const Color & color = App::COLORS [result.size ()];
-    app->draw ({64-w*4, 2, w*8, 10}, color, blend::MODULATE);
+    app->draw (title, 64 - 4 * title.size (), 2, 1, blend::ModAlpha (color));
 
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 4; ++x)
@@ -159,16 +156,17 @@ namespace ed900::menu
         uint8_t n = 4*y + x;
         bool active = (n == selection);
 
-        Rect R {32*x, 16+8*y, 32, 8};
+        Rect r {32*x, 16+8*y, 32, 8};
 
         if (active)
-          app->draw (R, color, blend::NONE);
+          app->draw (r, color);
 
         if (n < config.size ())
-          app->draw (config [n], R.x + 1, R.y + 1, 0);
-
-        if (states[n] != 0)
-          app->draw (R, App::COLORS [states[n]-1], blend::MODULATE);
+        {
+          static const Color WHITE {0xFF, 0xFF, 0xFF, 0xFF};
+          Color c = states [n] != 0 ? App::COLORS [states [n] - 1] : WHITE;
+          app->draw (config [n], r.x + 1, r.y + 1, 0, blend::ModAlpha (c));
+        }
       }
   }
 

@@ -287,17 +287,17 @@ namespace ed900
         matrix [y][x] = b (c, matrix [y][x]);
   }
 
-  void App::draw (const std::string & text, int x, int y, uint8_t font)
+  void App::draw (const std::string & text, int x, int y, uint8_t font, const Blender & b)
   {
     if (font < fonts.size ())
-      fonts [font].draw (this, text, x, y);
+      fonts [font].draw (this, text, x, y, b);
   }
 
-  void App::draw (const Image & image, const Rect & src, const Point & dst)
+  void App::draw (const Image & image, const Rect & src, const Point & dst, const Blender & b)
   {
     for (int y = 0, sy = src.y, dy = dst.y; y < src.h; ++y, ++sy, ++dy)
       for (int x = 0, sx = src.x, dx = dst.x; x < src.w; ++x, ++sx, ++dx)
-        matrix [dy][dx] = blend::BLEND (image [sy][sx], matrix [dy][dx]);
+        matrix [dy][dx] = b (image [sy][sx], matrix [dy][dx]);
   }
 
 }

@@ -45,13 +45,13 @@ namespace ed900::menu
   {
     if (selected)
     {
-      app->draw (r, c, blend::NONE);
+      app->draw (r, c);
       app->draw (text, r.x, r.y + 1, 1);
     }
     else
     {
-      app->draw (text, r.x, r.y + 1, 1);
-      app->draw (r, c, blend::MODULATE);
+      Blender b = blend::ModAlpha (c);
+      app->draw (text, r.x, r.y + 1, 1, b);
     }
   }
 

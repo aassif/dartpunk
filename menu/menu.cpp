@@ -58,15 +58,15 @@ namespace ed900::menu
     for (uint8_t i = 0; i < n; ++i)
     {
       uint8_t w = items[i].size ();
-      Rect R {64 - (2 + 4*w), 2 + 16*i, 4 + 8*w, 4 + 8};
+      Rect r {64 - (2 + 4*w), 2 + 16*i, 4 + 8*w, 4 + 8};
+      const Color & c = App::COLORS [i];
+      bool active = (i+1 == selection);
 
-      if (i+1 == selection)
-        app->draw (R, App::COLORS [i], blend::NONE);
+      if (active)
+        app->draw (r, c);
 
-      app->draw (items[i], R.x + 3, R.y + 2, 1);
-
-      if (i+1 != selection)
-        app->draw (R, App::COLORS [i], blend::MODULATE);
+      Blender b = active ? blend::ALPHA : blend::ModAlpha (c);
+      app->draw (items[i], r.x + 3, r.y + 2, 1, b);
     }
   }
 

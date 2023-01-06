@@ -5,10 +5,6 @@
 
 using namespace std;
 
-namespace ed900::blend
-{
-}
-
 namespace ed900
 {
 
