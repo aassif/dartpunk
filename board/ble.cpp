@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "ed900.h"
+#include "ble.h"
 
 #define BLUEZ "org.bluez"
 #define BLUEZ_ADAPTER "org.bluez.Adapter1"
@@ -9,37 +9,37 @@
 #define BLUEZ_GATT_SERVICE "org.bluez.GattService1"
 #define BLUEZ_GATT_CHARACTERISTIC "org.bluez.GattCharacteristic1"
 
-#define ED900_COOLDOWN 1000ms
-
 using namespace std;
-using namespace chrono;
-using namespace literals::chrono_literals;
 
-namespace ed900
+namespace ed900::board
 {
 
-  ED900::ED900 () :
+  BLE::BLE (const string & adapter,
+            const string & name,
+            const string & uuid) :
     bus {nullptr},
     adapter_path {},
     adapter_slot {},
+    device_name {name},
     device_path {},
     device_slot {nullptr},
+    gatt_char_uuid {uuid},
     gatt_char_path {},
     gatt_char_slot {nullptr},
     thread {},
-    stopped {false},
-    queue {},
-    queue_mutex {}
+    stopped {false}
   {
     sd_bus_open_system (&bus);
+    start (adapter);
   }
 
-  ED900::~ED900 ()
+  BLE::~BLE ()
   {
+    stop ();
     sd_bus_unref (bus);
   }
 
-  void ED900::Properties (const PropertyHandlerMap & handlers, sd_bus_message * m)
+  void BLE::Properties (const PropertyHandlerMap & handlers, sd_bus_message * m)
   {
     auto c0 = [m] () {return sd_bus_message_enter_container (m, 'a', "{sv}");};
     auto c1 = [m] () {return sd_bus_message_enter_container (m, 'e', "sv");};
@@ -69,7 +69,7 @@ namespace ed900
     sd_bus_message_exit_container (m); // c0
   }
 
-  void ED900::Interfaces (const string & path, const InterfaceHandlerMap & handlers, sd_bus_message * m)
+  void BLE::Interfaces (const string & path, const InterfaceHandlerMap & handlers, sd_bus_message * m)
   {
     auto c0 = [m] () {return sd_bus_message_enter_container (m, 'a', "{sa{sv}}");};
     auto c1 = [m] () {return sd_bus_message_enter_container (m, 'e', "sa{sv}");};
@@ -91,7 +91,7 @@ namespace ed900
     sd_bus_message_exit_container (m); // c0
   }
 
-  void ED900::Objects (const InterfaceHandlerMap & handlers, sd_bus_message * m)
+  void BLE::Objects (const InterfaceHandlerMap & handlers, sd_bus_message * m)
   {
     auto c0 = [m] () {return sd_bus_message_enter_container (m, 'a', "{oa{sa{sv}}}");};
     auto c1 = [m] () {return sd_bus_message_enter_container (m, 'e', "oa{sa{sv}}");};
@@ -109,7 +109,7 @@ namespace ed900
     sd_bus_message_exit_container (m); // c0
   }
 
-  void ED900::objects (const InterfaceHandlerMap & h)
+  void BLE::objects (const InterfaceHandlerMap & h)
   {
     sd_bus_error e = SD_BUS_ERROR_NULL;
     sd_bus_message * m = nullptr;
@@ -119,7 +119,7 @@ namespace ed900
     sd_bus_message_unref (m);
   }
 
-  string ED900::Match (const string & interface,
+  string BLE::Match (const string & interface,
                        const string & path,
                        const string & member,
                        const string & type)
@@ -127,7 +127,7 @@ namespace ed900
     return "interface='" + interface + "',member='" + member + "',path='" + path + "',type='" + type + "'";
   }
 
-  int ED900::InterfacesAdded (const InterfaceHandlerMap & handlers, sd_bus_message * m)
+  int BLE::InterfacesAdded (const InterfaceHandlerMap & handlers, sd_bus_message * m)
   {
     //cout << "InterfacesAdded" << endl;
 
@@ -143,7 +143,7 @@ namespace ed900
   }
 
   // "sa{sv}as"
-  int ED900::PropertiesChanged (const PropertyHandlerMap & handlers, sd_bus_message * m)
+  int BLE::PropertiesChanged (const PropertyHandlerMap & handlers, sd_bus_message * m)
   {
     //cout << "PropertiesChanged" << endl;
 
@@ -171,51 +171,46 @@ namespace ed900
     return 0;
   }
 
-  void ED900::start (const string & adapter)
+  void BLE::start (const string & adapter)
   {
-    thread = std::thread {&ED900::find, this, adapter};
+    thread = std::thread {&BLE::find, this, adapter};
   }
 
-  bool ED900::find (const string & a)
+  bool BLE::find (const string & a)
   {
     // Set adapter.
     adapter_path = a;
 
-    auto device = [this] (const string & path, sd_bus_message * m) {
-      const char * device_name = "";
-      auto name = [&device_name] (sd_bus_message * m) {
-        sd_bus_message_read_basic (m, 's', &device_name);
+    static auto device = [] (BLE * ble, bool stop) {
+      return [ble, stop] (const string & path, sd_bus_message * m) {
+        const char * n = "";
+        auto name = [&n] (sd_bus_message * m) {
+          sd_bus_message_read_basic (m, 's', &n);
+        };
+        PropertyHandlerMap handlers {{"Name", name}};
+        Properties (handlers, m);
+cout << path << " : " << n << endl;
+        if (n == ble->device_name)
+        {
+          if (stop)
+          {
+            sd_bus_error e = SD_BUS_ERROR_NULL;
+            sd_bus_call_method (ble->bus, BLUEZ, ble->adapter_path.c_str (), BLUEZ_ADAPTER, "StopDiscovery", &e, NULL, NULL);
+            sd_bus_error_free (&e);
+          }
+          ble->connect (path);
+        }
       };
-      PropertyHandlerMap handlers {{"Name", name}};
-      Properties (handlers, m);
-cout << path << " : " << device_name << endl;
-      if (! strcmp (device_name, "SDB-BT"))
-        connect (path);
     };
-    InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device}};
+
+    InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device (this, false)}};
     objects (handlers);
 
     if (device_path.empty ())
     {
       static auto f = [] (sd_bus_message * m, void * p, sd_bus_error *) {
-        ED900 * ed900 = static_cast<ED900 *> (p);
-        auto device = [ed900] (const string & path, sd_bus_message * m) {
-          const char * device_name = "";
-          auto name = [&device_name] (sd_bus_message * m) {
-            sd_bus_message_read_basic (m, 's', &device_name);
-          };
-          PropertyHandlerMap handlers {{"Name", name}};
-          Properties (handlers, m);
-cout << path << " : " << device_name << endl;
-          if (! strcmp (device_name, "SDB-BT"))
-          {
-            sd_bus_error e = SD_BUS_ERROR_NULL;
-            sd_bus_call_method (ed900->bus, BLUEZ, ed900->adapter_path.c_str (), BLUEZ_ADAPTER, "StopDiscovery", &e, NULL, NULL);
-            sd_bus_error_free (&e);
-            ed900->connect (path);
-          }
-        };
-        InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device}};
+        BLE * ble = static_cast<BLE *> (p);
+        InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device (ble, true)}};
         return InterfacesAdded (handlers, m);
       };
 
@@ -230,7 +225,7 @@ cout << path << " : " << device_name << endl;
     return loop ();
   }
 
-  bool ED900::connect (const string & d)
+  bool BLE::connect (const string & d)
   {
     cout << "Connecting to " << d << "..." << endl;
 
@@ -238,11 +233,11 @@ cout << path << " : " << device_name << endl;
     device_path = d;
 
     static auto f = [] (sd_bus_message * m, void * p, sd_bus_error *) {
-      ED900 * e = static_cast<ED900 *> (p);
+      BLE * ble = static_cast<BLE *> (p);
       PropertyHandlerMap handlers =
       {
-        {"Connected",        [e] (auto m) {e->onDeviceConnected (m);}},
-        {"ServicesResolved", [e] (auto m) {e->onDeviceServicesResolved (m);}}
+        {"Connected",        [ble] (auto m) {ble->onDeviceConnected (m);}},
+        {"ServicesResolved", [ble] (auto m) {ble->onDeviceServicesResolved (m);}}
       };
       return PropertiesChanged (handlers, m);
     };
@@ -257,7 +252,7 @@ cout << path << " : " << device_name << endl;
     return r >= 0;
   }
 
-  void ED900::onDeviceConnected (sd_bus_message * m)
+  void BLE::onDeviceConnected (sd_bus_message * m)
   {
     int value;
     sd_bus_message_read_basic (m, 'b', &value);
@@ -273,7 +268,7 @@ cout << path << " : " << device_name << endl;
     }
   }
 
-  void ED900::onDeviceServicesResolved (sd_bus_message * m)
+  void BLE::onDeviceServicesResolved (sd_bus_message * m)
   {
     int value;
     sd_bus_message_read_basic (m, 'b', &value);
@@ -282,15 +277,14 @@ cout << path << " : " << device_name << endl;
     if (value)
     {
       auto gatt_char = [this] (const string & path, sd_bus_message * m) {
-        const char * gatt_char_uuid = "";
-        auto uuid = [&gatt_char_uuid] (sd_bus_message * m) {
-          sd_bus_message_read_basic (m, 's', &gatt_char_uuid);
+        const char * u = "";
+        auto uuid = [&u] (sd_bus_message * m) {
+          sd_bus_message_read_basic (m, 's', &u);
         };
         PropertyHandlerMap h {{"UUID", uuid}};
         Properties (h, m);
-cout << path << " : " << gatt_char_uuid << endl;
-        static const string UUID {"0000fff1-0000-1000-8000-00805f9b34fb"};
-        if (gatt_char_uuid == UUID)
+cout << path << " : " << u << endl;
+        if (u == gatt_char_uuid)
           subscribe (path);
       };
       InterfaceHandlerMap handlers {{BLUEZ_GATT_CHARACTERISTIC, gatt_char}};
@@ -299,7 +293,7 @@ cout << path << " : " << gatt_char_uuid << endl;
   }
 
 #if 0
-  void ED900::onDeviceUUIDs (sd_bus_message * m)
+  void BLE::onDeviceUUIDs (sd_bus_message * m)
   {
     char ** data = nullptr;
     int r = sd_bus_message_read_strv (m, &data);
@@ -316,13 +310,13 @@ cout << path << " : " << gatt_char_uuid << endl;
   }
 #endif
 
-  bool ED900::subscribe (const string & c)
+  bool BLE::subscribe (const string & c)
   {
     // Set characteristic.
     gatt_char_path = c;
 
     static auto f = [] (sd_bus_message * m, void * p, sd_bus_error *) {
-      ED900 * e = static_cast<ED900 *> (p);
+      BLE * e = static_cast<BLE *> (p);
       PropertyHandlerMap handlers =
       {
         {"Value", [e] (auto m) {e->onValueChanged (m);}}
@@ -340,95 +334,15 @@ cout << path << " : " << gatt_char_uuid << endl;
     return r >= 0;
   }
 
-  void ED900::onValueChanged (sd_bus_message * m)
+  void BLE::onValueChanged (sd_bus_message * m)
   {
     const uint8_t * data = nullptr;
     size_t n = 0;
     int r = sd_bus_message_read_array (m, 'y', (const void **) &data, &n);
-    vector<uint8_t> d {data, data + n};
-    ED900::Dump (d);
-
-    // Previous timestamp.
-    static chrono::steady_clock::time_point t0;
-    // Event timestamp.
-    auto t = steady_clock::now ();
-
-    if (n == 10 && t > t0 + ED900_COOLDOWN)
-    {
-      uint32_t id = d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24);
-      uint16_t reserved1 = d[4] | (d[5] << 8);
-      uint8_t multiplier = d[6];
-
-      if (multiplier != 0)
-      {
-        uint8_t units = d[7];
-        uint8_t tens = d[8];
-        uint8_t reserved2 = d[9];
-
-        switch (tens)
-        {
-          case 0x0E:
-            emitDartEvent (25, 1);
-            break;
-
-          case 0x0F:
-            emitDartEvent (25, 2);
-            break;
-
-          default:
-          {
-            int value = 10 * tens + units;
-            int m = 1;
-            switch (multiplier)
-            {
-              case 0x0B : m = 3; break;
-              case 0x0D : m = 2; break;
-            }
-            emitDartEvent (value, m);
-            break;
-          }
-        }
-      }
-      else
-      {
-        uint8_t reserved2 = d[7];
-        uint16_t button = d[8] | (d[9] << 8);
-
-        // Previous button.
-        static Button b0;
-
-        switch (button)
-        {
-          // Repeat.
-          case 0xCCCC:
-            emitButtonEvent (b0);
-            break;
-
-          // Cancel.
-          case 0xDDDD:
-            emitButtonEvent (Button::CANCEL);
-            b0 = Button::CANCEL;
-            break;
-
-          // Miss.
-          case 0xEEEE:
-            emitDartEvent (0, 0);
-            break;
-
-          // Next.
-          case 0xFFFF:
-            emitButtonEvent (Button::NEXT);
-            b0 = Button::NEXT;
-            break;
-        }
-      }
-    }
-
-    // Update timestamp.
-    t0 = t;
+    onValueChanged ({data, data + n});
   }
 
-  bool ED900::loop ()
+  bool BLE::loop ()
   {
     sd_event * event = nullptr;
     sd_event_default (&event);
@@ -444,7 +358,7 @@ cout << path << " : " << gatt_char_uuid << endl;
     return true;
   }
 
-  void ED900::stop ()
+  void BLE::stop ()
   {
     stopped = true;
 
@@ -471,20 +385,7 @@ cout << path << " : " << gatt_char_uuid << endl;
     }
   }
 
-  ED900::EventPtr ED900::poll ()
-  {
-    lock_guard<mutex> lock {queue_mutex};
-
-    if (queue.empty ())
-      return EventPtr {};
-
-    EventPtr e = queue.front ();
-    queue.pop ();
-
-    return e;
-  }
-
-  string ED900::Hex (const vector<uint8_t> & data)
+  string BLE::Hex (const vector<uint8_t> & data)
   {
     ostringstream oss;
 
@@ -494,27 +395,9 @@ cout << path << " : " << gatt_char_uuid << endl;
     return oss.str ();
   }
 
-  void ED900::Dump (const vector<uint8_t> & data)
+  void BLE::Dump (const vector<uint8_t> & data)
   {
     cout << Hex (data) << endl;
-  }
-
-  void ED900::emitConnectionEvent (bool connected)
-  {
-    lock_guard<mutex> lock {queue_mutex};
-    queue.emplace (make_shared<ConnectionEvent> (connected));
-  }
-
-  void ED900::emitButtonEvent (Button button)
-  {
-    lock_guard<mutex> lock {queue_mutex};
-    queue.emplace (make_shared<ButtonEvent> (button));
-  }
-
-  void ED900::emitDartEvent (uint8_t value, uint8_t multiplier)
-  {
-    lock_guard<mutex> lock {queue_mutex};
-    queue.emplace (make_shared<DartEvent> (value, multiplier));
   }
 
 }

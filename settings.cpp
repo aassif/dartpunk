@@ -58,7 +58,7 @@ namespace ed900
         break;
 
       case State::X01_START:
-        if (game.index ())
+        if (x01_start.index ())
           state = State::X01_OPTIONS;
         break;
 

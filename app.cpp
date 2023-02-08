@@ -2,7 +2,7 @@
 
 #include "app.h"
 #include "input.h"
-#include "ed900.h"
+#include "board/ed900.h"
 
 #define LONG_PRESS(dt)      dt >= 1000ms
 #define VERY_LONG_PRESS(dt) dt >= 5000ms
@@ -63,8 +63,7 @@ namespace ed900
 
   void App::run ()
   {
-    ED900 ed900;
-    ed900.start ("/org/bluez/hci0");
+    board::Board * board = new board::ED900 {"/org/bluez/hci0"};
 
 #ifdef ED900_RGB_MATRIX
     Input input ("/dev/input/event0");
@@ -190,7 +189,7 @@ namespace ed900
         }
       }
 
-      for (ED900::EventPtr e = ed900.poll (); e; e = ed900.poll ())
+      for (EventPtr e = board->poll (); e; e = board->poll ())
       {
         switch (e->type)
         {
@@ -260,6 +259,8 @@ namespace ed900
       this_thread::sleep_for (20ms);
     }
 
+    delete board;
+
 #ifdef ED900_RGB_MATRIX
     delete m;
 #else
@@ -268,8 +269,6 @@ namespace ed900
     SDL_DestroyWindow (window);
     SDL_Quit ();
 #endif
-
-    ed900.stop ();
   }
 
   const Color App::COLORS [] =

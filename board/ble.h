@@ -1,27 +1,21 @@
-#ifndef __ED900__
-#define __ED900__
+#ifndef __ED900_BOARD_BLE__
+#define __ED900_BOARD_BLE__
 
 #include <vector>
 #include <functional>
 #include <map>
 #include <thread>
 #include <atomic>
-#include <memory>
-#include <queue>
-#include <mutex>
 
 #include <systemd/sd-bus.h>
 
-#include "event.h"
+#include "board.h"
 
-namespace ed900
+namespace ed900::board
 {
 
-  class ED900
+  class BLE : public Board
   {
-    public:
-      typedef std::shared_ptr<Event> EventPtr;
-
     private:
       // InterfacesAdded.
       typedef std::function<void (const std::string & path, sd_bus_message *)> InterfaceHandler;
@@ -34,14 +28,14 @@ namespace ed900
       sd_bus * bus;
       std::string adapter_path;
       sd_bus_slot * adapter_slot;
+      std::string device_name;
       std::string device_path;
       sd_bus_slot * device_slot;
+      std::string gatt_char_uuid;
       std::string gatt_char_path;
       sd_bus_slot * gatt_char_slot;
       std::thread thread;
       std::atomic<bool> stopped;
-      std::queue<EventPtr> queue;
-      std::mutex queue_mutex;
 
     private:
       // SD-bus objects.
@@ -61,17 +55,19 @@ namespace ed900
       void onDeviceServicesResolved (sd_bus_message *);
       // Notifications.
       void onValueChanged           (sd_bus_message *);
-      // Events.
-      void emitConnectionEvent (bool);
-      void emitDartEvent (uint8_t value, uint8_t multiplier);
-      void emitButtonEvent (Button);
+
+    protected:
+      virtual void onValueChanged (const std::vector<uint8_t> &) = 0;
 
     public:
-      ED900 ();
-      ~ED900 ();
+      BLE (const std::string & adapter,
+           const std::string & name,
+           const std::string & uuid);
+      virtual ~BLE ();
+
+    private:
       void start (const std::string & adapter);
       void stop ();
-      EventPtr poll ();
 
     private:
       // SD-bus match.
@@ -87,11 +83,14 @@ namespace ed900
       // SD-bus properties.
       static void Properties (const PropertyHandlerMap &, sd_bus_message *);
       static int PropertiesChanged (const PropertyHandlerMap &, sd_bus_message *);
+
+    protected:
       // Debug.
       static std::string Hex (const std::vector<uint8_t> &);
       static void Dump (const std::vector<uint8_t> &);
   };
-}
 
-#endif // __ED900__
+} // ed900::board
+
+#endif // __ED900_BOARD_BLE__
 

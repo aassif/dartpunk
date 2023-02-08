@@ -17,7 +17,6 @@ add_executable (rpi-ed900
   image.cpp
   input.cpp
   event.cpp
-  ed900.cpp
   bluetooth.cpp
   menu/menu.cpp
   menu/players.cpp
@@ -27,6 +26,9 @@ add_executable (rpi-ed900
   game/count-up.cpp
   game/x01.cpp
   game/cricket.cpp
+  board/board.cpp
+  board/ble.cpp
+  board/ed900.cpp
   main.cpp
 )
 

@@ -2,6 +2,7 @@
 #define __ED900_EVENT__
 
 #include <string>
+#include <memory> // shared_ptr
 
 namespace ed900
 {
@@ -58,6 +59,8 @@ namespace ed900
       ButtonEvent (Button);
       std::string text () const;
   };
+
+  typedef std::shared_ptr<Event> EventPtr;
 
 } // ed900
 
