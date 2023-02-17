@@ -3,14 +3,14 @@
 
 #include <fcntl.h>
 
-#include "input.h"
+#include "device.h"
 
 using namespace std;
 
-namespace ed900
+namespace ed900::input
 {
 
-  Input::Input (const std::string & path) :
+  Device::Device (const std::string & path) :
     device {nullptr}
   {
     int fd = open (path.c_str (), O_RDONLY|O_NONBLOCK);
@@ -21,19 +21,21 @@ namespace ed900
     cout << libevdev_get_name (device) << endl;
   }
 
-  Input::~Input ()
+  Device::~Device ()
   {
     libevdev_free (device);
   }
 
-  Input::EventPtr Input::poll ()
+  EventPtr Device::poll ()
   {
     auto e = make_shared<Event> ();
+
     int r = libevdev_next_event (device, LIBEVDEV_READ_FLAG_NORMAL, e.get ());
     while (r == LIBEVDEV_READ_STATUS_SYNC)
       r = libevdev_next_event (device, LIBEVDEV_READ_FLAG_SYNC, e.get ());
+
     return r == LIBEVDEV_READ_STATUS_SUCCESS ? e : nullptr;
   }
 
-} // ed900
+} // ed900::input
 

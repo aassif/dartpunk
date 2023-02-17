@@ -1,10 +1,10 @@
-#ifndef __ED900_EVENT__
-#define __ED900_EVENT__
+#ifndef __ED900_BOARD_EVENT__
+#define __ED900_BOARD_EVENT__
 
 #include <string>
 #include <memory> // shared_ptr
 
-namespace ed900
+namespace ed900::board
 {
 
   enum class EventType : uint8_t
@@ -62,7 +62,7 @@ namespace ed900
 
   typedef std::shared_ptr<Event> EventPtr;
 
-} // ed900
+} // ed900::board
 
-#endif // __ED900_EVENT__
+#endif // __ED900_BOARD_EVENT__
 

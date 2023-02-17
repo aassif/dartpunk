@@ -4,7 +4,7 @@
 #include <queue>
 #include <mutex>
 
-#include "../event.h"
+#include "event.h"
 
 namespace ed900::board
 {

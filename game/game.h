@@ -4,7 +4,7 @@
 #include <stack>
 #include <vector>
 
-#include "../event.h"
+#include "../board/event.h"
 
 namespace ed900
 {
@@ -13,6 +13,12 @@ namespace ed900
 
 namespace ed900::game
 {
+
+  using board::DartEvent;
+
+  using board::Button;
+  using board::ButtonEvent;
+
   class Game
   {
     private:

@@ -11,12 +11,6 @@
 #define WIDTH 128
 #define HEIGHT 64
 
-#ifdef ED900_RGB_MATRIX
-  #define SCALE 1
-#else
-  #define SCALE 5
-#endif
-
 namespace ed900
 {
   class App

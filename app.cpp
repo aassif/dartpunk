@@ -1,32 +1,35 @@
+#include <thread>
 #include <iostream>
+#include <signal.h>
 
 #include "app.h"
-#include "input.h"
-#include "board/ed900.h"
+
+#if ED900_BOARD_ED900
+  #include "board/ed900.h"
+#elif ED900_BOARD_VIRTUAL
+  #include "board/virtual.h"
+#else
+  #error ED900_BOARD
+#endif
+
+#if ED900_INPUT_JOYSTICK
+  #include "input/joystick.h"
+#elif ED900_INPUT_KEYBOARD
+  #include "input/keyboard.h"
+#elif ED900_INPUT_VIRTUAL
+  #include "input/virtual.h"
+#else
+  #error ED900_INPUT
+#endif
+
+#if ED900_DISPLAY_MATRIX
+  #include "display/matrix.h"
+#elif ED900_DISPLAY_VIRTUAL
+  #include "display/virtual.h"
+#endif
 
 #define LONG_PRESS(dt)      dt >= 1000ms
 #define VERY_LONG_PRESS(dt) dt >= 5000ms
-
-#ifdef ED900_RGB_MATRIX
-  #include "led-matrix.h"
-  using namespace rgb_matrix;
-#else
-  #include <SDL2/SDL.h>
-#endif
-
-#ifdef ED900_RGB_MATRIX
-  #define ED900_BUTTON_1     BTN_TRIGGER
-  #define ED900_BUTTON_2     BTN_THUMB
-  #define ED900_BUTTON_3     BTN_THUMB2
-  #define ED900_BUTTON_4     BTN_TOP
-  #define ED900_BUTTON_OK    BTN_BASE4
-#else
-  #define ED900_BUTTON_1     KEY_1
-  #define ED900_BUTTON_2     KEY_2
-  #define ED900_BUTTON_3     KEY_3
-  #define ED900_BUTTON_4     KEY_4
-  #define ED900_BUTTON_OK    KEY_SPACE
-#endif
 
 using namespace std;
 using namespace chrono;
@@ -53,48 +56,54 @@ namespace ed900
     auto f = [] (int) {stopped = 1;};
     signal (SIGINT,  f);
     signal (SIGTERM, f);
+
+#if ED900_SDL2
+    SDL_Init (SDL_INIT_EVERYTHING);
+#endif
   }
 
   App::~App ()
   {
     delete game;
     fonts.clear ();
+
+#if ED900_SDL2
+    SDL_Quit ();
+#endif
   }
 
   void App::run ()
   {
-    board::Board * board = new board::ED900 {"/org/bluez/hci0"};
+#if ED900_BOARD_ED900
+    board::ED900 board {"/org/bluez/hci0"};
+#elif ED900_BOARD_VIRTUAL
+    board::Virtual board;
+#endif
 
-#ifdef ED900_RGB_MATRIX
-    Input input ("/dev/input/event0");
-    RGBMatrix::Options options;
-    options.hardware_mapping = "adafruit-hat";
-    options.cols = 64;
-    options.rows = 64;
-    options.chain_length = 2;
-    options.pwm_bits = 11;
-    options.brightness = 100;
-    //options.limit_refresh_rate_hz = 25;
-    //options.show_refresh_rate = false;
-    rgb_matrix::RuntimeOptions runtime;
-    //runtime.daemon = 1;
-    //runtime.gpio_slowdown = 0;
-    RGBMatrix * m = RGBMatrix::CreateFromOptions (options, runtime);
-    FrameCanvas * canvas = m->CreateFrameCanvas ();
-#else
-    Input input ("/dev/input/event4");
-    SDL_Init (SDL_INIT_EVERYTHING);
-    SDL_Window * window = SDL_CreateWindow ("ED900", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * SCALE, HEIGHT * SCALE, 0);
-    SDL_Renderer * renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
-    SDL_RenderSetLogicalSize (renderer, WIDTH, HEIGHT);
-    SDL_Texture * texture = SDL_CreateTexture (renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+#if ED900_DISPLAY_MATRIX
+    display::Matrix display;
+#elif ED900_DISPLAY_VIRTUAL
+    display::Virtual display {5};
+#endif
+
+#if ED900_INPUT_JOYSTICK
+    input::Device input {"/dev/input/event0"};
+#elif ED900_INPUT_KEYBOARD
+    input::Device input {"/dev/input/event4"};
 #endif
 
     auto t0 = steady_clock::now ();
 
     while (! stopped)
     {
-      for (Input::EventPtr e = input.poll (); e; e = input.poll ())
+#if ED900_BOARD_VIRTUAL
+      SDL_Event e;
+      while (SDL_PollEvent (&e))
+        if (e.type == SDL_MOUSEBUTTONUP)
+          board.click (e.button);
+#endif
+
+      for (input::EventPtr e = input.poll (); e; e = input.poll ())
       {
         switch (e->type)
         {
@@ -126,7 +135,7 @@ namespace ed900
                 auto dt = t - t0;
                 switch (e->code)
                 {
-#ifndef ED900_RGB_MATRIX
+#if ED900_INPUT_KEYBOARD
                   case KEY_ESC:
                     stopped = 1;
                     break;
@@ -171,7 +180,7 @@ namespace ed900
                         }
                         else
                         {
-                          if (game->button (Button::NEXT))
+                          if (game->button (board::Button::NEXT))
                           {
                             delete game;
                             game = nullptr;
@@ -189,13 +198,13 @@ namespace ed900
         }
       }
 
-      for (EventPtr e = board->poll (); e; e = board->poll ())
+      for (board::EventPtr e = board.poll (); e; e = board.poll ())
       {
         switch (e->type)
         {
-          case EventType::CONNECTION:
+          case board::EventType::CONNECTION:
           {
-            auto c = dynamic_pointer_cast<ConnectionEvent> (e);
+            auto c = dynamic_pointer_cast<board::ConnectionEvent> (e);
             if (c->connected)
               state = game ? State::GAME : State::SETTINGS;
             else
@@ -203,17 +212,17 @@ namespace ed900
             break;
           }
 
-          case EventType::DART:
+          case board::EventType::DART:
           {
-            auto d = dynamic_pointer_cast<DartEvent> (e);
+            auto d = dynamic_pointer_cast<board::DartEvent> (e);
             if (game)
               game->dart (*d);
             break;
           }
 
-          case EventType::BUTTON:
+          case board::EventType::BUTTON:
           {
-            auto b = dynamic_pointer_cast<ButtonEvent> (e);
+            auto b = dynamic_pointer_cast<board::ButtonEvent> (e);
             if (game && game->button (*b))
             {
               delete game;
@@ -242,33 +251,10 @@ namespace ed900
           break;
       }
 
-#ifdef ED900_RGB_MATRIX
-      for (uint8_t y = 0; y < HEIGHT; ++y)
-        for (uint8_t x = 0; x < WIDTH; ++x)
-        {
-          const Color & c = matrix [y][x];
-          canvas->SetPixel (x, y, c.r, c.g, c.b);
-        }
-      canvas = m->SwapOnVSync (canvas);
-#else
-      SDL_UpdateTexture (texture, NULL, &(matrix[0][0]), WIDTH * 4);
-      SDL_RenderCopy (renderer, texture, NULL, NULL);
-      SDL_RenderPresent (renderer);
-#endif
+      display (matrix);
 
-      this_thread::sleep_for (20ms);
+      this_thread::sleep_for (40ms);
     }
-
-    delete board;
-
-#ifdef ED900_RGB_MATRIX
-    delete m;
-#else
-    SDL_DestroyTexture (texture);
-    SDL_DestroyRenderer (renderer);
-    SDL_DestroyWindow (window);
-    SDL_Quit ();
-#endif
   }
 
   const Color App::COLORS [] =

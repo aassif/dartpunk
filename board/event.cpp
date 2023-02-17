@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace ed900
+namespace ed900::board
 {
 
   Event::Event (EventType t) :

@@ -1,0 +1,13 @@
+#ifndef __ED900_INPUT_JOYSTICK__
+#define __ED900_INPUT_JOYSTICK__
+
+#include "device.h"
+
+#define ED900_BUTTON_1  BTN_TRIGGER
+#define ED900_BUTTON_2  BTN_THUMB
+#define ED900_BUTTON_3  BTN_THUMB2
+#define ED900_BUTTON_4  BTN_TOP
+#define ED900_BUTTON_OK BTN_BASE4
+
+#endif // __ED900_INPUT_JOYSTICK__
+
