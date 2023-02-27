@@ -139,10 +139,10 @@ namespace ed900::game
     for (uint8_t i = 0; i < 6; ++i)
     {
       string item = hidden (i) ? "?" : to_string (targets [i]);
-      app->draw (item, 64 - 4 * item.size (), 4 + i*8, 1);
+      app->draw (item, {64 - 4 * item.size (), 4 + i*8}, 1);
     }
 
-    app->draw ("BULL", 64-8, 4 + 6*8 + 1, 0);
+    app->draw ("BULL", {64-8, 4 + 6*8 + 1}, 0);
 
     static const Rect R [] =
     {
@@ -169,7 +169,7 @@ namespace ed900::game
       for (uint8_t j = 0; j < 7; ++j)
       {
         uint8_t n = min<uint8_t> (players[i].targets[j], 3);
-        app->draw (to_string (n), r.x + 1, r.y + 8*j + 1, 4);
+        app->draw (to_string (n), r, {1, 8*j + 1}, 4);
       }
     }
 

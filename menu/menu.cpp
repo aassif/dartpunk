@@ -60,13 +60,8 @@ namespace ed900::menu
       uint8_t w = items[i].size ();
       Rect r {64 - (2 + 4*w), 2 + 16*i, 4 + 8*w, 4 + 8};
       const Color & c = App::COLORS [i];
-      bool active = (i+1 == selection);
-
-      if (active)
-        app->draw (r, c);
-
-      Blender b = active ? blend::ALPHA : blend::ModAlpha (c);
-      app->draw (items[i], r.x + 3, r.y + 2, 1, b);
+      bool selected = (i+1 == selection);
+      app->draw (items [i], r, {3, 2}, 1, c, selected);
     }
   }
 

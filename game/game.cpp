@@ -59,8 +59,6 @@ namespace ed900::game
 
   void Game::dart (const DartEvent & e)
   {
-    cout << e.text (true) << endl;
-
     if (! state.is_waiting () && ! is_finished ())
     {
       stack.push (state);
@@ -124,7 +122,7 @@ namespace ed900::game
     uint8_t n = min<uint8_t> (3, state.darts.size ());
 
     for (uint8_t i = 0; i < n; ++i)
-      app->draw (state.darts [i].text (true), 0, 23 + 6 * i, 0);
+      app->draw (state.darts [i].text (true), {0, 23 + 6 * i}, 0);
   }
 
   void Game::render_scores (App * app, bool player) const
@@ -152,13 +150,13 @@ namespace ed900::game
         app->draw (r, c);
 
       Blender b = active ? blend::ALPHA : blend::ModAlpha (c);
-      app->draw (s.name, r.x + 1, r.y + 1, 0, b);
+      app->draw (s.name, r, {1, 1}, 0, b);
       string score = to_string (s.score);
       size_t n = score.size ();
       if (n <= 3)
-        app->draw (score, r.x + 1 + (3 - n) * 8, r.y + 7, 1, b);
+        app->draw (score, r, {1 + (3 - n) * 8, 7}, 1, b);
       else
-        app->draw (score, r.x + 1 + (6 - n) * 4, r.y + 9, 0, b);
+        app->draw (score, r, {1 + (6 - n) * 4, 9}, 0, b);
     }
 
     if (player)
@@ -166,7 +164,7 @@ namespace ed900::game
       const Score & s = S [state.player];
       string score = to_string (s.score);
       size_t n = score.size ();
-      app->draw (score, 64 - 16 * n, 32 - 16 + 1, 2);
+      app->draw (score, {64 - 16 * n, 32 - 16 + 1}, 2);
     }
   }
 
@@ -177,7 +175,7 @@ namespace ed900::game
       static const Color C {0, 0, 0, 192};
       app->draw (R, C, blend::ALPHA);
       uint8_t n = text.size ();
-      app->draw (text, 64 - n*16/2, 18, 3);
+      app->draw (text, {64 - n*16/2, 18}, 3);
     };
 
     if (is_finished ())

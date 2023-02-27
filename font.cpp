@@ -18,7 +18,7 @@ namespace ed900
   {
   }
     
-  void Font::draw (App * app, char c, int x, int y, const Blender & b)
+  void Font::draw (App * app, char c, const Point & p, const Blender & b)
   {
     //cout << "draw '" << (int) c << "' " << x << ' ' << y << endl;
 
@@ -26,15 +26,16 @@ namespace ed900
     if (f != index.end ())
     {
       const Rect & src = f->second;
-      app->draw (image, src, {x, y}, b);
+      app->draw (image, src, p, b);
     }
   }
 
-  void Font::draw (App * app, const string & text, int x, int y, const Blender & b)
+  void Font::draw (App * app, const string & text, const Point & p, const Blender & b)
   {
+    int x = p.x;
     for (auto c : text)
     {
-      draw (app, c, x, y, b);
+      draw (app, c, {x, p.y}, b);
       x += width;
     }
   }

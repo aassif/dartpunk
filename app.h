@@ -37,8 +37,14 @@ namespace ed900
     public:
       App ();
       ~App ();
-      void draw (const std::string &, int x, int y, uint8_t font, const Blender & = blend::ALPHA);
+      // Draw "text" at position p (relative to rectangle r).
+      void draw (const std::string &,               const Point &, uint8_t font, const Blender & = blend::ALPHA);
+      void draw (const std::string &, const Rect &, const Point &, uint8_t font, const Blender & = blend::ALPHA);
+      // Draw "text" at position p (relative to rectangle r, highlighted if selected).
+      void draw (const std::string &, const Rect &, const Point &, uint8_t font, const Color &, bool selected);
+      // Rectangle.
       void draw (const Rect &, const Color &, const Blender & = blend::NONE);
+      // Image.
       void draw (const Image &, const Rect & src, const Point & dst, const Blender & = blend::ALPHA);
       void run ();
 

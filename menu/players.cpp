@@ -31,22 +31,16 @@ namespace ed900::menu
 
   uint8_t Players::find_prev (uint8_t k0)
   {
-    if (k0 > 0)
-    {
-      for (uint8_t k = k0 - 1; k >= 0; --k)
-        if (states [k] == 0) return k;
-    }
+    for (uint8_t k = k0; k > 0; --k)
+      if (states [k-1] == 0) return k-1;
 
     return k0;
   }
 
   uint8_t Players::find_next (uint8_t k0)
   {
-    if (k0 + 1 < config.size ())
-    {
-      for (uint8_t k = k0 + 1; k < config.size (); ++k)
-        if (states [k] == 0) return k;
-    }
+    for (uint8_t k = k0; k < config.size () - 1; ++k)
+      if (states [k+1] == 0) return k+1;
 
     return k0;
   }
@@ -126,15 +120,15 @@ namespace ed900::menu
       for (uint8_t x = 0; x < 2; ++x)
       {
         uint8_t n = 2*y + x + 1;
-        const Color & c = App::COLORS [n-1];
-        bool active = (n == selection);
 
         Rect r {64*x, 32*y, 64, 32};
+        const Color & c = App::COLORS [n-1];
+        bool selected = (n == selection);
 
-        if (active)
+        if (selected)
           app->draw (r, c);
 
-        Blender b = active ? blend::ALPHA : blend::ModAlpha (c);
+        Blender b = selected ? blend::ALPHA : blend::ModAlpha (c);
 
         for (uint8_t i = 0; i < n; ++i)
         {
@@ -148,24 +142,23 @@ namespace ed900::menu
   {
     string title = "Player " + to_string (1 + result.size ());
     const Color & color = App::COLORS [result.size ()];
-    app->draw (title, 64 - 4 * title.size (), 2, 1, blend::ModAlpha (color));
+    app->draw (title, {64 - 4 * title.size (), 2}, 1, blend::ModAlpha (color));
 
     for (uint8_t y = 0; y < 6; ++y)
       for (uint8_t x = 0; x < 4; ++x)
       {
         uint8_t n = 4*y + x;
-        bool active = (n == selection);
-
-        Rect r {32*x, 16+8*y, 32, 8};
-
-        if (active)
-          app->draw (r, color);
-
         if (n < config.size ())
         {
+          Rect r {32*x, 16+8*y, 32, 8};
+          bool selected = (n == selection);
+
+          if (selected)
+            app->draw (r, color);
+
           static const Color WHITE {0xFF, 0xFF, 0xFF, 0xFF};
           Color c = states [n] != 0 ? App::COLORS [states [n] - 1] : WHITE;
-          app->draw (config [n], r.x + 1, r.y + 1, 0, blend::ModAlpha (c));
+          app->draw (config [n], r, {1, 1}, 0, blend::ModAlpha (c));
         }
       }
   }

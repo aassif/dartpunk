@@ -215,6 +215,7 @@ namespace ed900
           case board::EventType::DART:
           {
             auto d = dynamic_pointer_cast<board::DartEvent> (e);
+            cout << d->text (true) << endl;
             if (game)
               game->dart (*d);
             break;
@@ -272,10 +273,29 @@ namespace ed900
         matrix [y][x] = b (c, matrix [y][x]);
   }
 
-  void App::draw (const std::string & text, int x, int y, uint8_t font, const Blender & b)
+  void App::draw (const string & text, const Point & p, uint8_t font, const Blender & b)
   {
     if (font < fonts.size ())
-      fonts [font].draw (this, text, x, y, b);
+      fonts [font].draw (this, text, p, b);
+  }
+
+  void App::draw (const string & text, const Rect & r, const Point & p, uint8_t font, const Blender & b)
+  {
+    draw (text, {r.x + p.x, r.y + p.y}, font, b);
+  }
+
+  void App::draw (const string & text, const Rect & r, const Point & p, uint8_t font, const Color & c, bool selected)
+  {
+    if (selected)
+    {
+      draw (r, c);
+      draw (text, r, p, font);
+    }
+    else
+    {
+      Blender b = blend::ModAlpha (c);
+      draw (text, r, p, font, b);
+    }
   }
 
   void App::draw (const Image & image, const Rect & src, const Point & dst, const Blender & b)

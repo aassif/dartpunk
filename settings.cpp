@@ -50,7 +50,7 @@ namespace ed900
       case State::GAME:
         switch (game.index ())
         {
-          case 1: return new game::CountUp (players);
+          case 1: return new game::CountUp {players};
           case 2: state = State::X01_START;   break;
           case 3: state = State::CRICKET;     break;
           //case 4: state = State::TIC_TAC_TOE; break;
@@ -64,19 +64,19 @@ namespace ed900
 
       case State::X01_OPTIONS:
       {
-        static const uint16_t S [] = {0, 301, 501, 701, 901};
+        static const uint16_t S [] {0, 301, 501, 701, 901};
         uint16_t start = S [x01_start.index ()];
         std::pair<bool, bool> o {x01_options};
-        return new game::X01 (players, start, o.first, o.second);
+        return new game::X01 {players, start, o.first, o.second};
       }
 
       case State::CRICKET:
         switch (cricket.index ())
         {
-          case 1: return new game::Cricket (players, game::Cricket::STANDARD);
-          case 2: return new game::Cricket (players, game::Cricket::CUTTHROAT);
-          case 3: return new game::Cricket (players, game::Cricket::RANDOM);
-          case 4: return new game::Cricket (players, game::Cricket::HIDDEN);
+          case 1: return new game::Cricket {players, game::Cricket::STANDARD};
+          case 2: return new game::Cricket {players, game::Cricket::CUTTHROAT};
+          case 3: return new game::Cricket {players, game::Cricket::RANDOM};
+          case 4: return new game::Cricket {players, game::Cricket::HIDDEN};
         }
         break;
     }

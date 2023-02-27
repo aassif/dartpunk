@@ -41,35 +41,21 @@ namespace ed900::menu
     return {double_in, double_out};
   }
 
-  void X01::render_text (const string & text, const Rect & r, const Color & c, bool selected) const
-  {
-    if (selected)
-    {
-      app->draw (r, c);
-      app->draw (text, r.x, r.y + 1, 1);
-    }
-    else
-    {
-      Blender b = blend::ModAlpha (c);
-      app->draw (text, r.x, r.y + 1, 1, b);
-    }
-  }
-
   void X01::render () const
   {
-    static const Rect R0 {32-2*8/2, 32-3*9/2+1*9, 16+1, 9};
-    static const Rect R1 {32-2*8/2, 32-3*9/2+2*9, 16+1, 9};
+    static auto R = [] (int x, int y, int k) {
+      return Rect {32 + x*64 - k*8/2, 32 - 3*9/2 + y*9, 16 + 1, 9};
+    };
 
-    app->draw ("IN", 32-2*8/2+1, 32-3*9/2+0*9+1, 1);
-    render_text ("1x", R0, App::COLORS [0], ! double_in);
-    render_text ("2x", R1, App::COLORS [0],   double_in);
+    static const Point P {0, 1};
 
-    static const Rect R2 {96-2*8/2, 32-3*9/2+1*9, 16+1, 9};
-    static const Rect R3 {96-2*8/2, 32-3*9/2+2*9, 16+1, 9};
+    app->draw ("IN",  R(0,0,2), P, 1);
+    app->draw ("1x",  R(0,1,2), P, 1, App::COLORS [0], ! double_in);
+    app->draw ("2x",  R(0,2,2), P, 1, App::COLORS [0],   double_in);
 
-    app->draw ("OUT", 96-3*8/2+1, 32-3*9/2+0*9+1, 1);
-    render_text ("1x", R2, App::COLORS [1], ! double_out);
-    render_text ("2x", R3, App::COLORS [1],   double_out);
+    app->draw ("OUT", R(1,0,3), P, 1);
+    app->draw ("1x",  R(1,1,2), P, 1, App::COLORS [1], ! double_out);
+    app->draw ("2x",  R(1,2,2), P, 1, App::COLORS [1],   double_out);
   }
 
 } // ed900::menu
