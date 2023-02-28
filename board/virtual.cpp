@@ -61,7 +61,7 @@ namespace ed900::board
       static SDL_Color WHITE {0xFF, 0xFF, 0xFF, 0xFF};
       static SDL_Color GREEN {0x00, 0xFF, 0x00, 0xFF};
       static SDL_Color RED   {0xFF, 0x00, 0x00, 0xFF};
-      static SDL_Color BLUE  {0x00, 0x00, 0xFF, 0xFF};
+      static SDL_Color ZERO  {0x00, 0x00, 0x00, 0x00};
 
       switch (e.value)
       {
@@ -71,7 +71,7 @@ namespace ed900::board
             case 1: return GREEN;
             case 2: return RED;
           }
-          return BLUE;
+          return ZERO;
 
         case 2:
         case 3:
@@ -89,7 +89,7 @@ namespace ed900::board
             case 2: return RED;
             case 3: return RED;
           }
-          return BLUE;
+          return ZERO;
 
         case 1:
         case 4:
@@ -107,10 +107,10 @@ namespace ed900::board
             case 2: return GREEN;
             case 3: return GREEN;
           }
-          return BLUE;
+          return ZERO;
 
         default:
-          return BLUE;
+          return ZERO;
       }
     };
 
