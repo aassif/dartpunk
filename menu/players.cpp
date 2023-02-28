@@ -10,8 +10,8 @@ using namespace std;
 namespace ed900::menu
 {
 
-  Players::Players (App * app) :
-    Abstract {app},
+  Players::Players () :
+    Abstract {},
     icon {"images/player.png"},
     config {},
     count {0},
@@ -114,7 +114,7 @@ namespace ed900::menu
     return v;
   }
 
-  void Players::render_count () const
+  void Players::render_count (App * app) const
   {
     for (uint8_t y = 0; y < 2; ++y)
       for (uint8_t x = 0; x < 2; ++x)
@@ -138,7 +138,7 @@ namespace ed900::menu
       }
   }
 
-  void Players::render_names () const
+  void Players::render_names (App * app) const
   {
     string title = "Player " + to_string (1 + result.size ());
     const Color & color = App::COLORS [result.size ()];
@@ -163,12 +163,12 @@ namespace ed900::menu
       }
   }
 
-  void Players::render () const
+  void Players::render (App * app) const
   {
     if (count == 0)
-      render_count ();
+      render_count (app);
     else
-      render_names ();
+      render_names (app);
   }
 
 } // ed900::menu

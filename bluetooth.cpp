@@ -8,13 +8,12 @@ using namespace chrono;
 
 namespace ed900
 {
-  Bluetooth::Bluetooth (App * app) :
-    app {app},
+  Bluetooth::Bluetooth () :
     logo {"images/bluetooth.png"}
   {
   }
 
-  void Bluetooth::render ()
+  void Bluetooth::render (App * app)
   {
     static const uint8_t X = 48;
     static const uint8_t Y = 3;

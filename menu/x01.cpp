@@ -6,14 +6,10 @@ using namespace std;
 namespace ed900::menu
 {
 
-  X01::X01 (App * app) :
-    Abstract {app},
+  X01::X01 () :
+    Abstract {},
     double_in {false},
     double_out {true}
-  {
-  }
-
-  X01::~X01 ()
   {
   }
 
@@ -41,7 +37,7 @@ namespace ed900::menu
     return {double_in, double_out};
   }
 
-  void X01::render () const
+  void X01::render (App * app) const
   {
     static auto R = [] (int x, int y, int k) {
       return Rect {32 + x*64 - k*8/2, 32 - 3*9/2 + y*9, 16 + 1, 9};

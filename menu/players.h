@@ -20,16 +20,16 @@ namespace ed900::menu
       uint8_t find_prev (uint8_t);
       uint8_t find_next (uint8_t);
       uint8_t find_first ();
-      void render_count () const;
-      void render_names () const;
+      void render_count (App *) const;
+      void render_names (App *) const;
 
     public:
-      Players (App *);
+      Players ();
       virtual void select (uint8_t k);
       virtual bool confirm ();
       virtual bool cancel ();
       operator std::vector<std::string> () const;
-      virtual void render () const;
+      virtual void render (App *) const;
   };
 
 } // ed900::menu

@@ -9,13 +9,13 @@
 namespace ed900
 {
 
-  Settings::Settings (App * a) :
+  Settings::Settings () :
     state {State::PLAYERS},
-    players {a},
-    game {a, {"CountUp", "X01", "Cricket", "TicTacToe"}},
-    x01_start {a, {"301", "501", "701", "901"}},
-    x01_options {a},
-    cricket {a, {"Standard", "CutThroat", "Random", "Hidden"}}
+    players {},
+    game {{"CountUp", "X01", "Cricket", "TicTacToe"}},
+    x01_start {{"301", "501", "701", "901"}},
+    x01_options {},
+    cricket {{"Standard", "CutThroat", "Random", "Hidden"}}
   {
   }
 
@@ -111,10 +111,10 @@ namespace ed900
     }
   }
 
-  void Settings::render ()
+  void Settings::render (App * app)
   {
     menu::Abstract * m = menu ();
-    if (m) m->render ();
+    if (m) m->render (app);
   }
 
 }

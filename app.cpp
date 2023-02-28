@@ -43,8 +43,8 @@ namespace ed900
     matrix {},
     fonts {},
     state {State::BLUETOOTH},
-    bluetooth {this},
-    settings {this},
+    bluetooth {},
+    settings {},
     game {nullptr}
   {
     fonts.emplace_back (FontTomThumb {});
@@ -240,11 +240,11 @@ namespace ed900
       switch (state)
       {
         case State::BLUETOOTH :
-          bluetooth.render ();
+          bluetooth.render (this);
           break;
 
         case State::SETTINGS :
-          settings.render ();
+          settings.render (this);
           break;
 
         case State::GAME:

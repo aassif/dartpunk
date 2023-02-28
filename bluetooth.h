@@ -10,12 +10,11 @@ namespace ed900
   class Bluetooth
   {
     private:
-      App * app;
       Image logo;
 
     public: 
-      Bluetooth (App *);
-      void render ();
+      Bluetooth ();
+      void render (App *);
   };
 }
 

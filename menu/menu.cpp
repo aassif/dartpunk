@@ -10,8 +10,7 @@ namespace ed900::menu
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  Abstract::Abstract (App * a) :
-    app {a},
+  Abstract::Abstract () :
     selection {0}
   {
   }
@@ -33,13 +32,9 @@ namespace ed900::menu
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  Menu::Menu (App * app, const vector<string> & items) :
-    Abstract {app},
+  Menu::Menu (const vector<string> & items) :
+    Abstract {},
     items {items}
-  {
-  }
-
-  Menu::~Menu ()
   {
   }
 
@@ -48,7 +43,7 @@ namespace ed900::menu
     return selection;
   }
 
-  void Menu::render () const
+  void Menu::render (App * app) const
   {
     size_t n = min<size_t> (4, items.size ());
 

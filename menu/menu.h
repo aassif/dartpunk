@@ -15,16 +15,15 @@ namespace ed900::menu
   class Abstract
   {
     protected:
-      App * app;
       uint8_t selection;
 
     public: 
-      Abstract (App *);
+      Abstract ();
       virtual ~Abstract () = default;
       virtual void select (uint8_t);
       virtual bool confirm ();
       virtual bool cancel ();
-      virtual void render () const = 0;
+      virtual void render (App *) const = 0;
   };
 
   class Menu : public Abstract
@@ -33,10 +32,10 @@ namespace ed900::menu
       std::vector<std::string> items;
 
     public:
-      Menu (App *, const std::vector<std::string> &);
-      ~Menu ();
+      Menu (const std::vector<std::string> &);
+      virtual ~Menu () = default;
       uint8_t index ();
-      virtual void render () const;
+      virtual void render (App *) const;
   };
 
 } // ed900::menu

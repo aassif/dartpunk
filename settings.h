@@ -38,11 +38,11 @@ namespace ed900
       menu::Abstract * menu ();
 
     public:
-      Settings (App *);
+      Settings ();
       void select (uint8_t);
       game::Game * confirm ();
       void cancel ();
-      void render ();
+      void render (App *);
   };
 }
 
