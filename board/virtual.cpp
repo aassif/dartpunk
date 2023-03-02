@@ -32,7 +32,10 @@ namespace ed900::board
     int w, h;
     SDL_GetWindowSize (window, &w, &h);
     float r = 0.5 * min (w, h);
-    return pair<float, float> (BOARD_DOUBLE_END * (x - 0.5 * w) / r, BOARD_DOUBLE_END * (y - 0.5 * h) / r);
+    auto m = [r] (int x, int w) {
+      return BOARD_RADIUS * (0.5 + x - 0.5 * w) / r;
+    };
+    return {m (x, w), m (y, h)};
   };
 
   DartEvent Virtual::dart (float x, float y)
@@ -85,9 +88,9 @@ namespace ed900::board
         case 20:
           switch (e.multiplier)
           {
-            case 1: return BLACK;
-            case 2: return RED;
-            case 3: return RED;
+            case 1: return WHITE;
+            case 2: return GREEN;
+            case 3: return GREEN;
           }
           return ZERO;
 
@@ -103,9 +106,9 @@ namespace ed900::board
         case 19:
           switch (e.multiplier)
           {
-            case 1: return WHITE;
-            case 2: return GREEN;
-            case 3: return GREEN;
+            case 1: return BLACK;
+            case 2: return RED;
+            case 3: return RED;
           }
           return ZERO;
 
