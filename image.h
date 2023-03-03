@@ -1,5 +1,5 @@
-#ifndef __ED900_IMAGE__
-#define __ED900_IMAGE__
+#ifndef __DARTPUNK_IMAGE__
+#define __DARTPUNK_IMAGE__
 
 #include <functional>
 #include <cmath>
@@ -7,7 +7,7 @@
 
 #include <png.h>
 
-namespace ed900
+namespace dartpunk
 {
 
   struct Point
@@ -67,7 +67,7 @@ namespace ed900
       const Color * operator[] (int16_t y) const;
   };
 
-}
+} // dartpunk
 
-#endif // __ED900_IMAGE__
+#endif // __DARTPUNK_IMAGE__
 

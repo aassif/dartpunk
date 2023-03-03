@@ -2,7 +2,7 @@
 
 using namespace rgb_matrix;
 
-namespace ed900:display
+namespace dartpunk::display
 {
 
   Matrix::Matrix () :
@@ -38,5 +38,5 @@ namespace ed900:display
     canvas = matrix->SwapOnVSync (canvas);
   }
   
-}
+} // dartpunk::display
 

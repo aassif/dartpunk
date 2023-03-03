@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   X01::Player::Player (const string & name, uint16_t start) :
@@ -100,5 +100,5 @@ namespace ed900::game
     render_message (app);
   }
 
-} // ed900::game
+} // dartpunk::game
 

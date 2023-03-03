@@ -1,5 +1,5 @@
-#ifndef __ED900_APP__
-#define __ED900_APP__
+#ifndef __DARTPUNK_APP__
+#define __DARTPUNK_APP__
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #define WIDTH 128
 #define HEIGHT 64
 
-namespace ed900
+namespace dartpunk
 {
   class App
   {
@@ -53,5 +53,5 @@ namespace ed900
   };
 }
 
-#endif // __ED900_APP__
+#endif // __DARTPUNK_APP__
 

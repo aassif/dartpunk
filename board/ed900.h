@@ -1,9 +1,9 @@
-#ifndef __ED900_BOARD_ED900__
-#define __ED900_BOARD_ED900__
+#ifndef __DARTPUNK_BOARD_ED900__
+#define __DARTPUNK_BOARD_ED900__
 
 #include "ble.h"
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   class ED900 : public BLE
@@ -17,5 +17,5 @@ namespace ed900::board
 
 }
 
-#endif // __ED900_BOARD_ED900__
+#endif // __DARTPUNK_BOARD_ED900__
 

@@ -1,11 +1,11 @@
-#ifndef __ED900_GAME_CRICKET__
-#define __ED900_GAME_CRICKET__
+#ifndef __DARTPUNK_GAME_CRICKET__
+#define __DARTPUNK_GAME_CRICKET__
 
 #include <array>
 
 #include "game.h"
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   class Cricket : public Game
@@ -55,7 +55,7 @@ namespace ed900::game
       static std::array<uint8_t, 7> Targets (Mode);
   };
 
-} // ed900::game
+} // dartpunk::game
 
-#endif // __ED900_GAME_CRICKET__
+#endif // __DARTPUNK_GAME_CRICKET__
 

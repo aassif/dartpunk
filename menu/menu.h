@@ -1,15 +1,15 @@
-#ifndef __ED900_MENU__
-#define __ED900_MENU__
+#ifndef __DARTPUNK_MENU__
+#define __DARTPUNK_MENU__
 
 #include <vector>
 #include <string>
 
-namespace ed900
+namespace dartpunk
 {
   class App;
 }
 
-namespace ed900::menu
+namespace dartpunk::menu
 {
 
   class Abstract
@@ -38,6 +38,6 @@ namespace ed900::menu
       virtual void render (App *) const;
   };
 
-} // ed900::menu
+} // dartpunk::menu
 
-#endif // __ED900_MENU__
+#endif // __DARTPUNK_MENU__

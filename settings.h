@@ -1,11 +1,12 @@
-#ifndef __ED900_SETTINGS__
-#define __ED900_SETTINGS__
+#ifndef __DARTPUNK_SETTINGS__
+#define __DARTPUNK_SETTINGS__
 
 #include "menu/players.h"
 #include "menu/x01.h"
 
-namespace ed900
+namespace dartpunk
 {
+
   namespace game
   {
     class Game;
@@ -44,7 +45,8 @@ namespace ed900
       void cancel ();
       void render (App *);
   };
-}
 
-#endif // __ED900_SETTINGS__
+} // dartpunk
+
+#endif // __DARTPUNK_SETTINGS__
 

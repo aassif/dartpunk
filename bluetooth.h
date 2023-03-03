@@ -1,9 +1,9 @@
-#ifndef __ED900_BLUETOOTH__
-#define __ED900_BLUETOOTH__
+#ifndef __DARTPUNK_BLUETOOTH__
+#define __DARTPUNK_BLUETOOTH__
 
 #include "image.h"
 
-namespace ed900
+namespace dartpunk
 {
   class App;
 
@@ -18,5 +18,5 @@ namespace ed900
   };
 }
 
-#endif // __ED900_BLUETOOTH__
+#endif // __DARTPUNK_BLUETOOTH__
 

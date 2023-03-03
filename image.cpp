@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace ed900
+namespace dartpunk
 {
 
   Image::Image (const string & f) :

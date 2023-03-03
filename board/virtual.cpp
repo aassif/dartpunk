@@ -15,12 +15,12 @@
 
 using namespace std; // debug
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   Virtual::Virtual () :
     Board {},
-    window {SDL_CreateWindow ("ED900 - Board", 0, 0, 2*WINDOW_RADIUS, 2*WINDOW_RADIUS, 0)},
+    window {SDL_CreateWindow ("DartPunk - Board", 0, 0, 2*WINDOW_RADIUS, 2*WINDOW_RADIUS, 0)},
     renderer {SDL_CreateRenderer (window, -1, 0)}
   {
     emitConnectionEvent (true);
@@ -149,5 +149,6 @@ namespace ed900::board
   const uint8_t Virtual::VALUES [] {
     20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5
   };
-}
+
+} // dartpunk::board
 

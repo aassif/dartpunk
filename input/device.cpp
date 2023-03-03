@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace ed900::input
+namespace dartpunk::input
 {
 
   Device::Device (const std::string & path) :
@@ -37,5 +37,5 @@ namespace ed900::input
     return r == LIBEVDEV_READ_STATUS_SUCCESS ? e : nullptr;
   }
 
-} // ed900::input
+} // dartpunk::input
 

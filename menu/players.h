@@ -1,10 +1,10 @@
-#ifndef __ED900_MENU_PLAYERS__
-#define __ED900_MENU_PLAYERS__
+#ifndef __DARTPUNK_MENU_PLAYERS__
+#define __DARTPUNK_MENU_PLAYERS__
 
 #include "../image.h"
 #include "menu.h"
 
-namespace ed900::menu
+namespace dartpunk::menu
 {
 
   class Players : public Abstract
@@ -32,7 +32,7 @@ namespace ed900::menu
       virtual void render (App *) const;
   };
 
-} // ed900::menu
+} // dartpunk::menu
  
-#endif // __ED900_MENU_PLAYERS__
+#endif // __DARTPUNK_MENU_PLAYERS__
 

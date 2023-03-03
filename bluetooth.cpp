@@ -6,8 +6,9 @@
 using namespace std;
 using namespace chrono;
 
-namespace ed900
+namespace dartpunk
 {
+
   Bluetooth::Bluetooth () :
     logo {"images/bluetooth.png"}
   {
@@ -25,5 +26,6 @@ namespace ed900
     uint8_t c = static_cast<uint8_t> (127.5 + 127.5 * sin (dt.count () / 500.0));
     app->draw (logo, {0, 0, W, H}, {X, Y}, blend::ModAlpha ({c, c, 255, 255}));
   }
-}
+
+} // dartpunk
 

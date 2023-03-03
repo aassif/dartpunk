@@ -1,4 +1,4 @@
-# RPi + ED900
+# DartPunk
 
 Jeu de fléchettes connecté avec affichage sur matrice LED 128×64.
 
@@ -6,8 +6,8 @@ Jeu de fléchettes connecté avec affichage sur matrice LED 128×64.
 
 - [Decathlon Canaveral ED 900](https://www.decathlon.fr/p/cible-de-flechettes-electronique-connectee-ed-900/_/R-p-300600)
 - Raspberry Pi (testé avec Raspberry Pi Zero 2 W)
-- [Adafruit RGB Matrix Bonnet](https://www.adafruit.com/product/3211)
-- Matrice LED 128×64 (ou deux matrices 64×64) de type Hub75
+- Adafruit RGB Matrix Bonnet ([Adafruit](https://www.adafruit.com/product/3211), [Pimoroni](https://shop.pimoroni.com/products/adafruit-rgb-matrix-bonnet-for-raspberry-pi))
+- Matrice LED 128×64 de type Hub75 (ou deux matrices 64×64)
 - Alimentation 5V (MeanWell LRS-100-5 ou LRS-50-5)
 - Boutons arcade rétro-éclairés + contrôleur USB
 

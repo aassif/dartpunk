@@ -1,9 +1,9 @@
-#ifndef __ED900_GAME_X01__
-#define __ED900_GAME_X01__
+#ifndef __DARTPUNK_GAME_X01__
+#define __DARTPUNK_GAME_X01__
 
 #include "game.h"
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   class X01 : public Game
@@ -40,7 +40,7 @@ namespace ed900::game
       void render (App *) const;
   };
 
-} // ed900::game
+} // dartpunk::game
 
-#endif // __ED900_GAME_X01__
+#endif // __DARTPUNK_GAME_X01__
 

@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace ed900::menu
+namespace dartpunk::menu
 {
 
   Players::Players () :
@@ -171,5 +171,5 @@ namespace ed900::menu
       render_names (app);
   }
 
-} // ed900::menu
+} // dartpunk::menu
 

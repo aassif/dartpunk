@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace ed900
+namespace dartpunk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -336,5 +336,5 @@ namespace ed900
     }
   }
 
-}
+} // dartpunk
 

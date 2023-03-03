@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   void Board::emitConnectionEvent (bool connected)
@@ -36,5 +36,5 @@ namespace ed900::board
     return e;
   }
 
-}
+} // dartpunk::board
 

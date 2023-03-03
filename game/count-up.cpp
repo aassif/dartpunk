@@ -3,7 +3,7 @@
 
 using namespace std;
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   CountUp::CountUp (const vector<string> & names) :
@@ -49,5 +49,5 @@ namespace ed900::game
     render_message (app);
   }
 
-} // ed900::game
+} // dartpunk::game
 

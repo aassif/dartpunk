@@ -1,6 +1,6 @@
 #include "virtual.h"
 
-namespace ed900::display
+namespace dartpunk::display
 {
 
   Virtual::Virtual (uint8_t scale) :
@@ -8,7 +8,7 @@ namespace ed900::display
     renderer {nullptr},
     texture {nullptr}
   {
-    window = SDL_CreateWindow ("ED900 - Display", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * scale, HEIGHT * scale, 0);
+    window = SDL_CreateWindow ("DartPunk - Display", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * scale, HEIGHT * scale, 0);
 
     renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
     SDL_RenderSetLogicalSize (renderer, WIDTH, HEIGHT);
@@ -30,5 +30,5 @@ namespace ed900::display
     SDL_RenderPresent (renderer);
   }
 
-}
+} // dartpunk::display
 

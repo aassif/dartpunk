@@ -1,5 +1,5 @@
-#ifndef __ED900_BOARD_BLE__
-#define __ED900_BOARD_BLE__
+#ifndef __DARTPUNK_BOARD_BLE__
+#define __DARTPUNK_BOARD_BLE__
 
 #include <vector>
 #include <functional>
@@ -11,7 +11,7 @@
 
 #include "board.h"
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   class BLE : public Board
@@ -90,7 +90,7 @@ namespace ed900::board
       static void Dump (const std::vector<uint8_t> &);
   };
 
-} // ed900::board
+} // dartpunk::board
 
-#endif // __ED900_BOARD_BLE__
+#endif // __DARTPUNK_BOARD_BLE__
 

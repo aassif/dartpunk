@@ -1,9 +1,9 @@
-#ifndef __ED900_MENU_X01__
-#define __ED900_MENU_X01__
+#ifndef __DARTPUNK_MENU_X01__
+#define __DARTPUNK_MENU_X01__
 
 #include "menu.h"
 
-namespace ed900::menu
+namespace dartpunk::menu
 {
 
   class X01 : public Abstract
@@ -22,7 +22,7 @@ namespace ed900::menu
       virtual void render (App *) const;
   };
 
-} // ed900::menu
+} // dartpunk::menu
  
-#endif // __ED900_MENU_X01__
+#endif // __DARTPUNK_MENU_X01__
 

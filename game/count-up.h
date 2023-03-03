@@ -1,9 +1,9 @@
-#ifndef __ED900_GAME_COUNT_UP__
-#define __ED900_GAME_COUNT_UP__
+#ifndef __DARTPUNK_GAME_COUNT_UP__
+#define __DARTPUNK_GAME_COUNT_UP__
 
 #include "game.h"
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   class CountUp : public Game
@@ -27,7 +27,7 @@ namespace ed900::game
       void render (App *) const;
   };
 
-} // ed900::game
+} // dartpunk::game
 
-#endif // __ED900_GAME_COUNT_UP__
+#endif // __DARTPUNK_GAME_COUNT_UP__
 

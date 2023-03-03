@@ -1,17 +1,17 @@
-#ifndef __ED900_GAME__
-#define __ED900_GAME__
+#ifndef __DARTPUNK_GAME__
+#define __DARTPUNK_GAME__
 
 #include <stack>
 #include <vector>
 
 #include "../board/event.h"
 
-namespace ed900
+namespace dartpunk
 {
   class App;
 }
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   using board::DartEvent;
@@ -73,7 +73,7 @@ namespace ed900::game
       static bool HighScore (const Score & s1, const Score & s2);
   };
 
-} // ed900::game
+} // dartpunk::game
 
-#endif // __ED900_GAME__
+#endif // __DARTPUNK_GAME__
 

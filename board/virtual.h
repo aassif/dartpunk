@@ -1,11 +1,11 @@
-#ifndef __ED900_BOARD_VIRTUAL__
-#define __ED900_BOARD_VIRTUAL__
+#ifndef __DARTPUNK_BOARD_VIRTUAL__
+#define __DARTPUNK_BOARD_VIRTUAL__
 
 #include <SDL2/SDL.h>
 
 #include "board.h"
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   class Virtual : public Board
@@ -27,7 +27,7 @@ namespace ed900::board
       static const uint8_t VALUES [];
   };
 
-}
+} // dartpunk::board
 
-#endif // __ED900_BOARD_VIRTUAL__
+#endif // __DARTPUNK_BOARD_VIRTUAL__
 

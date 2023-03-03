@@ -3,7 +3,7 @@
 
 using namespace std;
 
-namespace ed900::menu
+namespace dartpunk::menu
 {
 
   X01::X01 () :
@@ -54,5 +54,5 @@ namespace ed900::menu
     app->draw ("2x",  R(1,2,2), P, 1, App::COLORS [1],   double_out);
   }
 
-} // ed900::menu
+} // dartpunk::menu
 

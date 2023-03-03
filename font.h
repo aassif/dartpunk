@@ -1,12 +1,12 @@
-#ifndef __ED900_FONT__
-#define __ED900_FONT__
+#ifndef __DARTPUNK_FONT__
+#define __DARTPUNK_FONT__
 
 #include <string>
 #include <map>
 
 #include "image.h"
 
-namespace ed900
+namespace dartpunk
 {
 
   class App;
@@ -99,7 +99,7 @@ namespace ed900
       FontCricket ();
   };
 
-} // ed900
+} // dartpunk
 
-#endif // __ED900_FONT__
+#endif // __DARTPUNK_FONT__
 

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   Event::Event (EventType t) :
@@ -55,5 +55,5 @@ namespace ed900::board
     }
   }
 
-} // ed900
+} // dartpunk::board
 

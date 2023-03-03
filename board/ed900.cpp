@@ -8,7 +8,7 @@ using namespace std;
 using namespace chrono;
 using namespace literals::chrono_literals;
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   ED900::ED900 (const string & adapter) :
@@ -100,5 +100,5 @@ namespace ed900::board
     t0 = t;
   }
 
-}
+} // dartpunk::board
 

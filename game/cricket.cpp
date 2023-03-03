@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   array<uint8_t, 7> Cricket::Targets (Mode m)
@@ -205,5 +205,5 @@ namespace ed900::game
     render_message (app);
   }
 
-} // ed900::game
+} // dartpunk::game
 

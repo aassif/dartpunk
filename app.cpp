@@ -4,27 +4,27 @@
 
 #include "app.h"
 
-#if ED900_BOARD_ED900
+#if DARTPUNK_BOARD_ED900
   #include "board/ed900.h"
-#elif ED900_BOARD_VIRTUAL
+#elif DARTPUNK_BOARD_VIRTUAL
   #include "board/virtual.h"
 #else
-  #error ED900_BOARD
+  #error DARTPUNK_BOARD
 #endif
 
-#if ED900_INPUT_JOYSTICK
+#if DARTPUNK_INPUT_JOYSTICK
   #include "input/joystick.h"
-#elif ED900_INPUT_KEYBOARD
+#elif DARTPUNK_INPUT_KEYBOARD
   #include "input/keyboard.h"
-#elif ED900_INPUT_VIRTUAL
+#elif DARTPUNK_INPUT_VIRTUAL
   #include "input/virtual.h"
 #else
-  #error ED900_INPUT
+  #error DARTPUNK_INPUT
 #endif
 
-#if ED900_DISPLAY_MATRIX
+#if DARTPUNK_DISPLAY_MATRIX
   #include "display/matrix.h"
-#elif ED900_DISPLAY_VIRTUAL
+#elif DARTPUNK_DISPLAY_VIRTUAL
   #include "display/virtual.h"
 #endif
 
@@ -34,7 +34,7 @@
 using namespace std;
 using namespace chrono;
 
-namespace ed900
+namespace dartpunk
 {
 
   volatile sig_atomic_t stopped = 0;
@@ -57,7 +57,7 @@ namespace ed900
     signal (SIGINT,  f);
     signal (SIGTERM, f);
 
-#if ED900_SDL2
+#if DARTPUNK_SDL2
     SDL_Init (SDL_INIT_EVERYTHING);
 #endif
   }
@@ -67,28 +67,28 @@ namespace ed900
     delete game;
     fonts.clear ();
 
-#if ED900_SDL2
+#if DARTPUNK_SDL2
     SDL_Quit ();
 #endif
   }
 
   void App::run ()
   {
-#if ED900_BOARD_ED900
+#if DARTPUNK_BOARD_ED900
     board::ED900 board {"/org/bluez/hci0"};
-#elif ED900_BOARD_VIRTUAL
+#elif DARTPUNK_BOARD_VIRTUAL
     board::Virtual board;
 #endif
 
-#if ED900_DISPLAY_MATRIX
+#if DARTPUNK_DISPLAY_MATRIX
     display::Matrix display;
-#elif ED900_DISPLAY_VIRTUAL
+#elif DARTPUNK_DISPLAY_VIRTUAL
     display::Virtual display {5};
 #endif
 
-#if ED900_INPUT_JOYSTICK
+#if DARTPUNK_INPUT_JOYSTICK
     input::Device input {"/dev/input/event0"};
-#elif ED900_INPUT_KEYBOARD
+#elif DARTPUNK_INPUT_KEYBOARD
     input::Device input {"/dev/input/event4"};
 #endif
 
@@ -96,7 +96,7 @@ namespace ed900
 
     while (! stopped)
     {
-#if ED900_BOARD_VIRTUAL
+#if DARTPUNK_BOARD_VIRTUAL
       SDL_Event e;
       while (SDL_PollEvent (&e))
         if (e.type == SDL_MOUSEBUTTONUP)
@@ -131,22 +131,22 @@ namespace ed900
               // Up.
               case 0:
               {
-                //cout << "Button: " << (uint16_t) ED900_BUTTON (e) << endl;
+                //cout << "Button: " << (uint16_t) DARTPUNK_BUTTON (e) << endl;
                 auto dt = t - t0;
                 switch (e->code)
                 {
-#if ED900_INPUT_KEYBOARD
+#if DARTPUNK_INPUT_KEYBOARD
                   case KEY_ESC:
                     stopped = 1;
                     break;
 #endif
 
-                  case ED900_BUTTON_1: settings.select (1); break;
-                  case ED900_BUTTON_2: settings.select (2); break;
-                  case ED900_BUTTON_3: settings.select (3); break;
-                  case ED900_BUTTON_4: settings.select (4); break;
+                  case DARTPUNK_BUTTON_1: settings.select (1); break;
+                  case DARTPUNK_BUTTON_2: settings.select (2); break;
+                  case DARTPUNK_BUTTON_3: settings.select (3); break;
+                  case DARTPUNK_BUTTON_4: settings.select (4); break;
 
-                  case ED900_BUTTON_OK:
+                  case DARTPUNK_BUTTON_OK:
                     switch (state)
                     {
                       case State::BLUETOOTH:

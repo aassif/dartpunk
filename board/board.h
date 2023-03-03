@@ -1,12 +1,12 @@
-#ifndef __ED900_BOARD__
-#define __ED900_BOARD__
+#ifndef __DARTPUNK_BOARD__
+#define __DARTPUNK_BOARD__
 
 #include <queue>
 #include <mutex>
 
 #include "event.h"
 
-namespace ed900::board
+namespace dartpunk::board
 {
 
   class Board
@@ -27,7 +27,7 @@ namespace ed900::board
       EventPtr poll ();
   };
 
-}
+} // dartpunk::board
 
-#endif // __ED900_BOARD__
+#endif // __DARTPUNK_BOARD__
 

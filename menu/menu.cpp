@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace ed900::menu
+namespace dartpunk::menu
 {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,5 +60,5 @@ namespace ed900::menu
     }
   }
 
-} // ed900::menu
+} // dartpunk::menu
 

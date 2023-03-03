@@ -1,12 +1,12 @@
-#ifndef __ED900_INPUT_DEVICE__
-#define __ED900_INPUT_DEVICE__
+#ifndef __DARTPUNK_INPUT_DEVICE__
+#define __DARTPUNK_INPUT_DEVICE__
 
 #include <string>
 #include <memory> // shared_ptr
 
 #include <libevdev/libevdev.h>
 
-namespace ed900::input
+namespace dartpunk::input
 {
 
   typedef struct input_event Event;
@@ -24,7 +24,7 @@ namespace ed900::input
       EventPtr poll ();
   };
 
-} // ed900::input
+} // dartpunk::input
 
-#endif // __ED900_INPUT_DEVICE__
+#endif // __DARTPUNK_INPUT_DEVICE__
 

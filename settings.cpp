@@ -6,7 +6,7 @@
 #include "game/x01.h"
 #include "game/cricket.h"
 
-namespace ed900
+namespace dartpunk
 {
 
   Settings::Settings () :
@@ -117,5 +117,5 @@ namespace ed900
     if (m) m->render (app);
   }
 
-}
+} // dartpunk
 

@@ -1,11 +1,11 @@
-#ifndef __ED900_DISPLAY_VIRTUAL__
-#define __ED900_DISPLAY_VIRTUAL__
+#ifndef __DARTPUNK_DISPLAY_VIRTUAL__
+#define __DARTPUNK_DISPLAY_VIRTUAL__
 
 #include <SDL2/SDL.h>
 
 #include "../app.h"
 
-namespace ed900::display
+namespace dartpunk::display
 {
 
   class Virtual
@@ -22,7 +22,7 @@ namespace ed900::display
       void operator() (const App::Matrix &);
   };
 
-}
+} // dartpunk::display
 
-#endif // __ED900_DISPLAY_VIRTUAL__
+#endif // __DARTPUNK_DISPLAY_VIRTUAL__
 

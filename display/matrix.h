@@ -1,9 +1,9 @@
-#ifndef __ED900_DISPLAY_MATRIX__
-#define __ED900_DISPLAY_MATRIX__
+#ifndef __DARTPUNK_DISPLAY_MATRIX__
+#define __DARTPUNK_DISPLAY_MATRIX__
 
 #include "led-matrix.h"
 
-namespace ed900::display
+namespace dartpunk::display
 {
 
   class Matrix
@@ -21,5 +21,5 @@ namespace ed900::display
 
 }
 
-#endif // __ED900_DISPLAY_MATRIX__
+#endif // __DARTPUNK_DISPLAY_MATRIX__
 

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace ed900::game
+namespace dartpunk::game
 {
 
   Game::State::State (uint8_t p, uint8_t r) :
@@ -203,5 +203,5 @@ namespace ed900::game
     return s1.score < s2.score;
   }
 
-} // ed900::game
+} // dartpunk::game
 
