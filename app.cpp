@@ -17,7 +17,7 @@
 #elif DARTPUNK_INPUT_KEYBOARD
   #include "input/keyboard.h"
 #elif DARTPUNK_INPUT_VIRTUAL
-  #include "input/virtual.h"
+  //
 #else
   #error DARTPUNK_INPUT
 #endif
@@ -26,6 +26,8 @@
   #include "display/matrix.h"
 #elif DARTPUNK_DISPLAY_VIRTUAL
   #include "display/virtual.h"
+#else
+  #error DARTPUNK_DISPLAY
 #endif
 
 #define LONG_PRESS(dt)      dt >= 1000ms
@@ -72,6 +74,81 @@ namespace dartpunk
 #endif
   }
 
+  void App::settings_confirm ()
+  {
+    game::Game * g = settings.confirm ();
+    if (g)
+    {
+      game = g;
+      state = State::GAME;
+    }
+  }
+
+  void App::game_next ()
+  {
+    if (game->button (board::Button::NEXT))
+      game_stop ();
+  }
+
+  void App::game_stop ()
+  {
+    delete game;
+    game = nullptr;
+    state = State::SETTINGS;
+  }
+
+  void App::input_next_very_long ()
+  {
+    stopped = 1;
+  }
+
+  void App::input_next_long ()
+  {
+    switch (state)
+    {
+      case State::SETTINGS:
+        settings.cancel ();
+        break;
+
+      case State::GAME:
+        game_stop ();
+        break;
+    }
+  }
+
+  void App::input_next ()
+  {
+    switch (state)
+    {
+      case State::SETTINGS:
+        settings_confirm ();
+        break;
+
+      case State::GAME:
+        game_next ();
+        break;
+    }
+  }
+
+  void App::board_connection (board::EventPtr e)
+  {
+    auto c = dynamic_pointer_cast<board::ConnectionEvent> (e);
+    state = c->connected ? (game ? State::GAME : State::SETTINGS) : State::BLUETOOTH;
+  }
+
+  void App::board_dart (board::EventPtr e)
+  {
+    auto d = dynamic_pointer_cast<board::DartEvent> (e);
+    cout << d->text (true) << endl;
+    if (game) game->dart (*d);
+  }
+
+  void App::board_button (board::EventPtr e)
+  {
+    auto b = dynamic_pointer_cast<board::ButtonEvent> (e);
+    if (game && game->button (*b)) game_stop ();
+  }
+
   void App::run ()
   {
 #if DARTPUNK_BOARD_ED900
@@ -93,16 +170,56 @@ namespace dartpunk
 #endif
 
     auto t0 = steady_clock::now ();
-
     while (! stopped)
     {
-#if DARTPUNK_BOARD_VIRTUAL
+#if DARTPUNK_SDL2
       SDL_Event e;
       while (SDL_PollEvent (&e))
-        if (e.type == SDL_MOUSEBUTTONUP)
-          board.click (e.button);
+      {
+        switch (e.type)
+        {
+#if DARTPUNK_BOARD_VIRTUAL
+          case SDL_MOUSEBUTTONUP:
+            board.click (e.button);
+            break;
 #endif
 
+#if DARTPUNK_INPUT_VIRTUAL
+          case SDL_KEYDOWN:
+            if (! e.key.repeat)
+              t0 = steady_clock::time_point {milliseconds {e.key.timestamp}};
+            break;
+
+          case SDL_KEYUP:
+          {
+            auto dt = steady_clock::time_point {milliseconds {e.key.timestamp}} - t0;
+            switch (e.key.keysym.sym)
+            {
+              case SDLK_ESCAPE:
+                stopped = 1;
+                break;
+
+              case SDLK_1: settings.select (1); break;
+              case SDLK_2: settings.select (2); break;
+              case SDLK_3: settings.select (3); break;
+              case SDLK_4: settings.select (4); break;
+
+              case SDLK_SPACE:
+                if (VERY_LONG_PRESS (dt))
+                  input_next_very_long ();
+                else if (LONG_PRESS (dt))
+                  input_next_long ();
+                else
+                  input_next ();
+            }
+            break;
+          }
+#endif
+        }
+      }
+#endif
+
+#if DARTPUNK_EVDEV
       for (input::EventPtr e = input.poll (); e; e = input.poll ())
       {
         switch (e->type)
@@ -146,50 +263,13 @@ namespace dartpunk
                   case DARTPUNK_BUTTON_3: settings.select (3); break;
                   case DARTPUNK_BUTTON_4: settings.select (4); break;
 
-                  case DARTPUNK_BUTTON_OK:
-                    switch (state)
-                    {
-                      case State::BLUETOOTH:
-                        if (VERY_LONG_PRESS (dt))
-                          stopped = 1;
-                        break;
-
-                      case State::SETTINGS:
-                        if (VERY_LONG_PRESS (dt))
-                          stopped = 1;
-                        else if (LONG_PRESS (dt))
-                          settings.cancel ();
-                        else
-                        {
-                          game::Game * g = settings.confirm ();
-                          if (g)
-                          {
-                            game = g;
-                            state = State::GAME;
-                          }
-                        }
-                        break;
-
-                      case State::GAME:
-                        if (VERY_LONG_PRESS (dt))
-                          stopped = 1;
-                        else if (LONG_PRESS (dt))
-                        {
-                          delete game;
-                          state = State::SETTINGS;
-                        }
-                        else
-                        {
-                          if (game->button (board::Button::NEXT))
-                          {
-                            delete game;
-                            game = nullptr;
-                            state = State::SETTINGS;
-                          }
-                        }
-                        break;
-                    }
-                    break;
+                  case DARTPUNK_BUTTON_NEXT:
+                    if (VERY_LONG_PRESS (dt))
+                      input_next_very_long ();
+                    else if (LONG_PRESS (dt))
+                      input_next_long ();
+                    else
+                      input_next ();
                 }
                 break;
               }
@@ -197,41 +277,15 @@ namespace dartpunk
           }
         }
       }
+#endif
 
       for (board::EventPtr e = board.poll (); e; e = board.poll ())
       {
         switch (e->type)
         {
-          case board::EventType::CONNECTION:
-          {
-            auto c = dynamic_pointer_cast<board::ConnectionEvent> (e);
-            if (c->connected)
-              state = game ? State::GAME : State::SETTINGS;
-            else
-              state = State::BLUETOOTH;
-            break;
-          }
-
-          case board::EventType::DART:
-          {
-            auto d = dynamic_pointer_cast<board::DartEvent> (e);
-            cout << d->text (true) << endl;
-            if (game)
-              game->dart (*d);
-            break;
-          }
-
-          case board::EventType::BUTTON:
-          {
-            auto b = dynamic_pointer_cast<board::ButtonEvent> (e);
-            if (game && game->button (*b))
-            {
-              delete game;
-              game = nullptr;
-              state = State::SETTINGS;
-            }
-            break;
-          }
+          case board::EventType::CONNECTION: board_connection (e); break;
+          case board::EventType::DART:       board_dart       (e); break;
+          case board::EventType::BUTTON:     board_button     (e); break;
         }
       }
 

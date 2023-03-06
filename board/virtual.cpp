@@ -33,7 +33,7 @@ namespace dartpunk::board
     SDL_GetWindowSize (window, &w, &h);
     float r = 0.5 * min (w, h);
     auto m = [r] (int x, int w) {
-      return BOARD_RADIUS * (0.5 + x - 0.5 * w) / r;
+      return BOARD_DOUBLE_END * (0.5 + x - 0.5 * w) / r;
     };
     return {m (x, w), m (y, h)};
   };

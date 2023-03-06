@@ -34,6 +34,20 @@ namespace dartpunk
       Settings settings;
       game::Game * game;
 
+    private:
+      void settings_confirm ();
+      // Game logic.
+      void game_next ();
+      void game_stop ();
+      // "Next" button.
+      void input_next_very_long ();
+      void input_next_long ();
+      void input_next ();
+      // Board events.
+      void board_connection (board::EventPtr);
+      void board_button     (board::EventPtr);
+      void board_dart       (board::EventPtr);
+
     public:
       App ();
       ~App ();
