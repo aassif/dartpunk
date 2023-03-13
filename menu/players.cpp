@@ -7,6 +7,10 @@
 
 using namespace std;
 
+#define ROWS 5
+#define COLS 4
+#define PAGE (ROWS*COLS)
+
 namespace dartpunk::menu
 {
 
@@ -52,7 +56,9 @@ namespace dartpunk::menu
 
   void Players::select (uint8_t k)
   {
-    if (count > 0)
+    if (count == 0)
+      selection = k;
+    else
     {
       switch (k)
       {
@@ -60,8 +66,6 @@ namespace dartpunk::menu
         case 2: selection = find_next (selection); break;
       }
     }
-    else
-      selection = k;
   }
 
   bool Players::confirm ()
@@ -144,24 +148,50 @@ namespace dartpunk::menu
     const Color & color = App::COLORS [result.size ()];
     app->draw (title, {64 - 4 * title.size (), 2}, 1, blend::ModAlpha (color));
 
-    for (uint8_t y = 0; y < 6; ++y)
-      for (uint8_t x = 0; x < 4; ++x)
+    uint8_t p = selection / PAGE;
+    for (uint8_t y = 0; y < ROWS; ++y)
+      for (uint8_t x = 0; x < COLS; ++x)
       {
-        uint8_t n = 4*y + x;
-        if (n < config.size ())
+        uint8_t k = PAGE*p + COLS*y + x;
+        if (k < config.size ())
         {
-          Rect r {32*x, 16+8*y, 32, 8};
-          bool selected = (n == selection);
+          Rect r {32*x, 14+8*y, 32, 8};
+          bool selected = (k == selection);
 
           if (selected)
             app->draw (r, color);
 
           static const Color WHITE {0xFF, 0xFF, 0xFF, 0xFF};
-          Color c = states [n] != 0 ? App::COLORS [states [n] - 1] : WHITE;
-          app->draw (config [n], r, {1, 1}, 0, blend::ModAlpha (c));
+          Color c = states [k] != 0 ? App::COLORS [states [k] - 1] : WHITE;
+          app->draw (config [k], r, {1, 1}, 0, blend::ModAlpha (c));
         }
       }
+
+    app->draw ("PREV", {1+0,  64 - 6}, 0, blend::ModAlpha (App::COLORS[0]));
+    app->draw ("NEXT", {1+32, 64 - 6}, 0, blend::ModAlpha (App::COLORS[1]));
+    //app->draw ("NEW", {1+64, 64 - 6}, 0, blend::ModAlpha (App::COLORS[2]));
+
+    uint8_t n = (config.size () + (PAGE-1)) / PAGE;
+    if (n > 1)
+    {
+      string page = to_string (p+1) + "/" + to_string (n);
+      app->draw (page, {128 - 4 * page.size (), 64 - 6}, 0);
+    }
   }
+
+/*
+  void Players::render_keyboard (App * app)
+  {
+    static const uint8_t KEYBOARD =
+    {
+      {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', ' ', ' '},
+      {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'},
+      {'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'},
+      {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'},
+      {'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
+    };
+  }
+*/
 
   void Players::render (App * app) const
   {
