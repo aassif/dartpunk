@@ -154,6 +154,27 @@ namespace dartpunk::menu
     return config[0].state == 0 ? 0 : find_next (0);
   }
 
+  bool Players::add (const string & name)
+  {
+    if (name.empty ())
+      return false;
+
+    selection = config.size ();
+    config.push_back ({name, 0});
+    write ();
+    return true;
+  }
+
+  bool Players::edit (const string & name)
+  {
+    if (name.empty ())
+      return false;
+
+    config[selection].name = name;
+    write ();
+    return true;
+  }
+
   void Players::write () const
   {
     ofstream ofs ("names.txt");
@@ -205,27 +226,14 @@ namespace dartpunk::menu
 
       case State::ADD:
       {
-        string name = editor;
-        if (! name.empty ())
-        {
-          selection = config.size ();
-          config.push_back ({name, 0});
-          write ();
-        }
         state = State::SELECT;
-        return confirm ();
+        return add (editor) && confirm ();
       }
 
       case State::EDIT:
       {
-        string name = editor;
-        if (! name.empty ())
-        {
-          config[selection].name = name;
-          write ();
-        }
         state = State::SELECT;
-        return false;
+        return edit (editor) && confirm ();
       }
 
       case State::SELECT:
@@ -256,7 +264,7 @@ namespace dartpunk::menu
           uint8_t k = result.back ();
           result.pop_back ();
           config[k].state = 0;
-          selection = find_first ();
+          selection = k; //find_first ();
         }
         else
           state = State::COUNT;

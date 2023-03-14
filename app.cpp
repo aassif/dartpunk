@@ -3,6 +3,7 @@
 #include <signal.h>
 
 #include "app.h"
+#include "video.h"
 
 #if DARTPUNK_BOARD_ED900
   #include "board/ed900.h"
@@ -157,20 +158,20 @@ namespace dartpunk
     board::Virtual board;
 #endif
 
-#if DARTPUNK_DISPLAY_MATRIX
-    display::Matrix display;
-#elif DARTPUNK_DISPLAY_VIRTUAL
-    display::Virtual display {5};
-#endif
-
 #if DARTPUNK_INPUT_JOYSTICK
     input::Device input {"/dev/input/event0"};
 #elif DARTPUNK_INPUT_KEYBOARD
     input::Device input {"/dev/input/event4"};
 #endif
 
+#if DARTPUNK_DISPLAY_MATRIX
+    display::Matrix display;
+#elif DARTPUNK_DISPLAY_VIRTUAL
+    display::Virtual display {5};
+#endif
+
     auto t0 = steady_clock::now ();
-    while (! stopped)
+    for (auto t1 = t0 + 40ms; ! stopped; t1 += 40ms)
     {
 #if DARTPUNK_SDL2
       SDL_Event e;
@@ -308,7 +309,7 @@ namespace dartpunk
 
       display (matrix);
 
-      this_thread::sleep_for (40ms);
+      this_thread::sleep_until (t1);
     }
   }
 

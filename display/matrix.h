@@ -3,6 +3,8 @@
 
 #include "led-matrix.h"
 
+#include "../app.h"
+
 namespace dartpunk::display
 {
 

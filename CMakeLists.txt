@@ -12,6 +12,7 @@ add_executable (dartpunk
   app.cpp
   font.cpp
   image.cpp
+  video.cpp
   bluetooth.cpp
   menu/menu.cpp
   menu/players.cpp

@@ -62,6 +62,8 @@ namespace dartpunk::menu
       uint8_t find_prev (uint8_t) const;
       uint8_t find_next (uint8_t) const;
       uint8_t find_first () const;
+      bool add  (const std::string &);
+      bool edit (const std::string &);
       void write () const;
 
     public:

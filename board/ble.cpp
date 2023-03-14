@@ -11,7 +11,14 @@
 
 using namespace std;
 
-namespace ed900::board
+inline
+void dartpunk_message (const string & prefix, int r, const sd_bus_error & e)
+{
+  string m = (r < 0 ? string {e.name} + ": " + string {e.message} : "OK");
+  cout << prefix << ": " << m << endl;
+}
+
+namespace dartpunk::board
 {
 
   BLE::BLE (const string & adapter,
@@ -120,9 +127,9 @@ namespace ed900::board
   }
 
   string BLE::Match (const string & interface,
-                       const string & path,
-                       const string & member,
-                       const string & type)
+                     const string & path,
+                     const string & member,
+                     const string & type)
   {
     return "interface='" + interface + "',member='" + member + "',path='" + path + "',type='" + type + "'";
   }
@@ -181,8 +188,8 @@ namespace ed900::board
     // Set adapter.
     adapter_path = a;
 
-    static auto device = [] (BLE * ble, bool stop) {
-      return [ble, stop] (const string & path, sd_bus_message * m) {
+    static auto device = [] (BLE * ble, function<void (BLE *, const string &)> callback) {
+      return [ble, callback] (const string & path, sd_bus_message * m) {
         const char * n = "";
         auto name = [&n] (sd_bus_message * m) {
           sd_bus_message_read_basic (m, 's', &n);
@@ -191,26 +198,32 @@ namespace ed900::board
         Properties (handlers, m);
 cout << path << " : " << n << endl;
         if (n == ble->device_name)
-        {
-          if (stop)
-          {
-            sd_bus_error e = SD_BUS_ERROR_NULL;
-            sd_bus_call_method (ble->bus, BLUEZ, ble->adapter_path.c_str (), BLUEZ_ADAPTER, "StopDiscovery", &e, NULL, NULL);
-            sd_bus_error_free (&e);
-          }
-          ble->connect (path);
-        }
+          callback (ble, path);
       };
     };
 
-    InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device (this, false)}};
+    static auto connect = [] (BLE * ble, const string & path) {
+      ble->connect (path);
+    };
+
+    InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device (this, connect)}};
     objects (handlers);
 
     if (device_path.empty ())
     {
       static auto f = [] (sd_bus_message * m, void * p, sd_bus_error *) {
+        auto stop_discovery_and_connect = [] (BLE * ble, const string & path) {
+          // Stop discovery.
+          sd_bus_error e = SD_BUS_ERROR_NULL;
+          int r = sd_bus_call_method (ble->bus, BLUEZ, ble->adapter_path.c_str (), BLUEZ_ADAPTER, "StopDiscovery", &e, NULL, NULL);
+          dartpunk_message ("StopDiscovery", r, e);
+          sd_bus_error_free (&e);
+          // Connect.
+          ble->connect (path);
+        };
+
         BLE * ble = static_cast<BLE *> (p);
-        InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device (ble, true)}};
+        InterfaceHandlerMap handlers {{BLUEZ_DEVICE, device (ble, stop_discovery_and_connect)}};
         return InterfacesAdded (handlers, m);
       };
 
@@ -218,7 +231,8 @@ cout << path << " : " << n << endl;
       sd_bus_add_match (bus, &adapter_slot, match.c_str (), f, (void *) this);
 
       sd_bus_error e = SD_BUS_ERROR_NULL;
-      sd_bus_call_method (bus, BLUEZ, adapter_path.c_str (), BLUEZ_ADAPTER, "StartDiscovery", &e, NULL, NULL);
+      int r = sd_bus_call_method (bus, BLUEZ, adapter_path.c_str (), BLUEZ_ADAPTER, "StartDiscovery", &e, NULL, NULL);
+      dartpunk_message ("StartDiscovery", r, e);
       sd_bus_error_free (&e);
     }
 
@@ -247,9 +261,17 @@ cout << path << " : " << n << endl;
 
     sd_bus_error e = SD_BUS_ERROR_NULL;
     int r = sd_bus_call_method (bus, BLUEZ, device_path.c_str (), BLUEZ_DEVICE, "Connect", &e, NULL, NULL);
+    dartpunk_message ("Connect", r, e);
     sd_bus_error_free (&e);
 
-    return r >= 0;
+    if (r < 0)
+    {
+      device_path.clear ();
+      device_slot = sd_bus_slot_unref (device_slot);
+      throw 1; // FIXME: connection always fails on boot!
+    }
+
+    return true;
   }
 
   void BLE::onDeviceConnected (sd_bus_message * m)
@@ -316,10 +338,10 @@ cout << path << " : " << u << endl;
     gatt_char_path = c;
 
     static auto f = [] (sd_bus_message * m, void * p, sd_bus_error *) {
-      BLE * e = static_cast<BLE *> (p);
+      BLE * ble = static_cast<BLE *> (p);
       PropertyHandlerMap handlers =
       {
-        {"Value", [e] (auto m) {e->onValueChanged (m);}}
+        {"Value", [ble] (auto m) {ble->onValueChanged (m);}}
       };
       return PropertiesChanged (handlers, m);
     };
@@ -329,6 +351,7 @@ cout << path << " : " << u << endl;
 
     sd_bus_error e = SD_BUS_ERROR_NULL;
     int r = sd_bus_call_method (bus, BLUEZ, gatt_char_path.c_str (), BLUEZ_GATT_CHARACTERISTIC, "StartNotify", &e, NULL, NULL);
+    dartpunk_message ("StartNotify", r, e);
     sd_bus_error_free (&e);
 
     return r >= 0;
@@ -373,14 +396,16 @@ cout << path << " : " << u << endl;
         gatt_char_slot = sd_bus_slot_unref (gatt_char_slot);
 
         sd_bus_error e = SD_BUS_ERROR_NULL;
-        sd_bus_call_method (bus, BLUEZ, gatt_char_path.c_str (), BLUEZ_DEVICE, "StopNotify", &e, NULL, NULL);
+        int r = sd_bus_call_method (bus, BLUEZ, gatt_char_path.c_str (), BLUEZ_DEVICE, "StopNotify", &e, NULL, NULL);
+        dartpunk_message ("Disconnect", r, e);
         sd_bus_error_free (&e);
       }
 
       device_slot = sd_bus_slot_unref (device_slot);
 
       sd_bus_error e = SD_BUS_ERROR_NULL;
-      sd_bus_call_method (bus, BLUEZ, device_path.c_str (), BLUEZ_DEVICE, "Disconnect", &e, NULL, NULL);
+      int r = sd_bus_call_method (bus, BLUEZ, device_path.c_str (), BLUEZ_DEVICE, "Disconnect", &e, NULL, NULL);
+      dartpunk_message ("Disconnect", r, e);
       sd_bus_error_free (&e);
     }
   }
@@ -400,5 +425,5 @@ cout << path << " : " << u << endl;
     cout << Hex (data) << endl;
   }
 
-}
+} // dartpunk::board
 
