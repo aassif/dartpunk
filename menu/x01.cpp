@@ -22,16 +22,6 @@ namespace dartpunk::menu
     }
   }
 
-  bool X01::confirm ()
-  {
-    return true;
-  }
-
-  bool X01::cancel ()
-  {
-    return true;
-  }
-
   X01::operator pair<bool, bool> () const
   {
     return {double_in, double_out};

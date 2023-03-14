@@ -48,7 +48,7 @@ namespace dartpunk
         break;
 
       case State::GAME:
-        switch (game.index ())
+        switch (game)
         {
           case 1: return new game::CountUp {players};
           case 2: state = State::X01_START;   break;
@@ -58,20 +58,20 @@ namespace dartpunk
         break;
 
       case State::X01_START:
-        if (x01_start.index ())
+        if (x01_start)
           state = State::X01_OPTIONS;
         break;
 
       case State::X01_OPTIONS:
       {
         static const uint16_t S [] {0, 301, 501, 701, 901};
-        uint16_t start = S [x01_start.index ()];
+        uint16_t start = S [x01_start];
         std::pair<bool, bool> o {x01_options};
         return new game::X01 {players, start, o.first, o.second};
       }
 
       case State::CRICKET:
-        switch (cricket.index ())
+        switch (cricket)
         {
           case 1: return new game::Cricket {players, game::Cricket::STANDARD};
           case 2: return new game::Cricket {players, game::Cricket::CUTTHROAT};

@@ -14,19 +14,30 @@ namespace dartpunk::menu
 
   class Abstract
   {
-    protected:
-      uint8_t selection;
-
-    public: 
-      Abstract ();
+    public:
+      Abstract () = default;
       virtual ~Abstract () = default;
-      virtual void select (uint8_t);
+      virtual void select (uint8_t) = 0;
       virtual bool confirm ();
       virtual bool cancel ();
       virtual void render (App *) const = 0;
   };
 
-  class Menu : public Abstract
+  class Selection : public Abstract
+  {
+    protected:
+      uint8_t selection;
+
+    public:
+      Selection ();
+      virtual ~Selection () = default;
+      virtual void select (uint8_t);
+      virtual bool confirm ();
+      operator uint8_t () const;
+      virtual void render (App *) const = 0;
+  };
+
+  class Menu : public Selection
   {
     private:
       std::vector<std::string> items;

@@ -16,8 +16,6 @@ namespace dartpunk::menu
       X01 ();
       ~X01 () = default;
       virtual void select (uint8_t k);
-      virtual bool confirm ();
-      virtual bool cancel ();
       operator std::pair<bool, bool> () const;
       virtual void render (App *) const;
   };

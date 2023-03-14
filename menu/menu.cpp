@@ -10,19 +10,9 @@ namespace dartpunk::menu
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  Abstract::Abstract () :
-    selection {0}
-  {
-  }
-
-  void Abstract::select (uint8_t k)
-  {
-    selection = k;
-  }
-
   bool Abstract::confirm ()
   {
-    return selection != 0;
+    return true;
   }
 
   bool Abstract::cancel ()
@@ -32,8 +22,30 @@ namespace dartpunk::menu
 
 ////////////////////////////////////////////////////////////////////////////////
 
+  Selection::Selection () :
+    selection {0}
+  {
+  }
+
+  void Selection::select (uint8_t k)
+  {
+    selection = k;
+  }
+
+  bool Selection::confirm ()
+  {
+    return selection != 0;
+  }
+
+  Selection::operator uint8_t () const
+  {
+    return selection;
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+
   Menu::Menu (const vector<string> & items) :
-    Abstract {},
+    Selection {},
     items {items}
   {
   }
