@@ -35,14 +35,21 @@ namespace dartpunk
       game::Game * game;
 
     private:
+      // Buttons.
+      void button1 (bool special);
+      void button2 (bool special);
+      void button3 ();
+      void button4 ();
+      void button5 (bool special);
+      // Settings.
       void settings_confirm ();
       // Game logic.
       void game_next ();
       void game_stop ();
-      // "Next" button.
-      void input_next_very_long ();
-      void input_next_long ();
-      void input_next ();
+      // Special behaviour.
+      void exit (int);
+      void cancel ();
+      void confirm ();
       // Board events.
       void board_connection (board::EventPtr);
       void board_button     (board::EventPtr);
@@ -60,7 +67,7 @@ namespace dartpunk
       void draw (const Rect &, const Color &, const Blender & = blend::NONE);
       // Image.
       void draw (const Image &, const Rect & src, const Point & dst, const Blender & = blend::ALPHA);
-      void run ();
+      int run ();
 
     public:
       static const Color COLORS [];

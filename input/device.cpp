@@ -2,13 +2,33 @@
 #include <cstring>
 
 #include <fcntl.h>
+#include <sys/time.h>
 
 #include "device.h"
 
 using namespace std;
+using namespace chrono;
 
 namespace dartpunk::input
 {
+
+////////////////////////////////////////////////////////////////////////////////
+
+  TimePoint now ()
+  {
+    timespec ts;
+    clock_gettime (CLOCK_REALTIME, &ts);
+    return TimePoint {seconds {ts.tv_sec} + nanoseconds {ts.tv_nsec}};
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+
+  TimePoint Event::time_point () const
+  {
+    return TimePoint {seconds {input_event_sec} + microseconds {input_event_usec}};
+  }
+
+////////////////////////////////////////////////////////////////////////////////
 
   Device::Device (const std::string & path) :
     device {nullptr}

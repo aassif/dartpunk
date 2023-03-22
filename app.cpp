@@ -3,7 +3,12 @@
 #include <signal.h>
 
 #include "app.h"
+#include "button.h"
 #include "video.h"
+
+#define DARTPUNK_QUIT     0
+#define DARTPUNK_RESTART -1
+#define DARTPUNK_DEFAULT  1
 
 #if DARTPUNK_BOARD_ED900
   #include "board/ed900.h"
@@ -18,7 +23,11 @@
 #elif DARTPUNK_INPUT_KEYBOARD
   #include "input/keyboard.h"
 #elif DARTPUNK_INPUT_VIRTUAL
-  //
+  #define DARTPUNK_BUTTON_1 SDLK_1
+  #define DARTPUNK_BUTTON_2 SDLK_2
+  #define DARTPUNK_BUTTON_3 SDLK_3
+  #define DARTPUNK_BUTTON_4 SDLK_4
+  #define DARTPUNK_BUTTON_5 SDLK_SPACE
 #else
   #error DARTPUNK_INPUT
 #endif
@@ -31,16 +40,13 @@
   #error DARTPUNK_DISPLAY
 #endif
 
-#define LONG_PRESS(dt)      dt >= 1000ms
-#define VERY_LONG_PRESS(dt) dt >= 5000ms
-
 using namespace std;
 using namespace chrono;
 
 namespace dartpunk
 {
 
-  volatile sig_atomic_t stopped = 0;
+  volatile sig_atomic_t status = DARTPUNK_DEFAULT;
 
   App::App () :
     matrix {},
@@ -56,7 +62,20 @@ namespace dartpunk
     fonts.emplace_back (FontRoboto {});
     fonts.emplace_back (FontCricket {});
 
-    auto f = [] (int) {stopped = 1;};
+    auto f = [] (int s) {
+      switch (s)
+      {
+        case SIGINT:
+        case SIGTERM:
+          status = DARTPUNK_QUIT;
+          break;
+
+        default:
+          status = DARTPUNK_RESTART;
+          break;
+      }
+    };
+
     signal (SIGINT,  f);
     signal (SIGTERM, f);
 
@@ -73,6 +92,40 @@ namespace dartpunk
 #if DARTPUNK_SDL2
     SDL_Quit ();
 #endif
+  }
+
+  void App::button1 (bool special)
+  {
+    if (special)
+      exit (DARTPUNK_QUIT);
+    else
+      settings.select (1);
+  }
+
+  void App::button2 (bool special)
+  {
+    if (special)
+      exit (DARTPUNK_RESTART);
+    else
+      settings.select (2);
+  }
+
+  void App::button3 ()
+  {
+    settings.select (3);
+  }
+
+  void App::button4 ()
+  {
+    settings.select (4);
+  }
+
+  void App::button5 (bool special)
+  {
+    if (special)
+      cancel ();
+    else
+      confirm ();
   }
 
   void App::settings_confirm ()
@@ -98,12 +151,12 @@ namespace dartpunk
     state = State::SETTINGS;
   }
 
-  void App::input_next_very_long ()
+  void App::exit (int s)
   {
-    stopped = 1;
+    status = s;
   }
 
-  void App::input_next_long ()
+  void App::cancel ()
   {
     switch (state)
     {
@@ -117,7 +170,7 @@ namespace dartpunk
     }
   }
 
-  void App::input_next ()
+  void App::confirm ()
   {
     switch (state)
     {
@@ -150,7 +203,7 @@ namespace dartpunk
     if (game && game->button (*b)) game_stop ();
   }
 
-  void App::run ()
+  int App::run ()
   {
 #if DARTPUNK_BOARD_ED900
     board::ED900 board {"/org/bluez/hci0"};
@@ -170,8 +223,11 @@ namespace dartpunk
     display::Virtual display {5};
 #endif
 
-    auto t0 = steady_clock::now ();
-    for (auto t1 = t0 + 40ms; ! stopped; t1 += 40ms)
+    Button b1 {5s};
+    Button b2 {3s};
+    Button b5 {1s};
+
+    for (TimePoint t1 {steady_clock::now () + 40ms}; status > 0; t1 += 40ms)
     {
 #if DARTPUNK_SDL2
       SDL_Event e;
@@ -187,31 +243,38 @@ namespace dartpunk
 
 #if DARTPUNK_INPUT_VIRTUAL
           case SDL_KEYDOWN:
+          {
+            TimePoint t {milliseconds {e.key.timestamp}};
             if (! e.key.repeat)
-              t0 = steady_clock::time_point {milliseconds {e.key.timestamp}};
+            {
+              switch (e.key.keysym.sym)
+              {
+                case SDLK_1:     b1 = t; break;
+                case SDLK_2:     b2 = t; break;
+                case SDLK_SPACE: b5 = t; break;
+              }
+            }
             break;
+          }
 
           case SDL_KEYUP:
           {
-            auto dt = steady_clock::time_point {milliseconds {e.key.timestamp}} - t0;
+            TimePoint t {milliseconds {e.key.timestamp}};
             switch (e.key.keysym.sym)
             {
               case SDLK_ESCAPE:
-                stopped = 1;
+                exit (DARTPUNK_QUIT);
                 break;
 
-              case SDLK_1: settings.select (1); break;
-              case SDLK_2: settings.select (2); break;
-              case SDLK_3: settings.select (3); break;
-              case SDLK_4: settings.select (4); break;
+              case SDLK_BACKSPACE:
+                cancel ();
+                break;
 
-              case SDLK_SPACE:
-                if (VERY_LONG_PRESS (dt))
-                  input_next_very_long ();
-                else if (LONG_PRESS (dt))
-                  input_next_long ();
-                else
-                  input_next ();
+              case DARTPUNK_BUTTON_1: button1 (b1 [t]); break;
+              case DARTPUNK_BUTTON_2: button2 (b2 [t]); break;
+              case DARTPUNK_BUTTON_3: button3 (/****/); break;
+              case DARTPUNK_BUTTON_4: button4 (/****/); break;
+              case DARTPUNK_BUTTON_5: button5 (b5 [t]); break;
             }
             break;
           }
@@ -227,7 +290,7 @@ namespace dartpunk
         {
           case EV_KEY:
           {
-            auto t = steady_clock::time_point {seconds {e->input_event_sec} + microseconds {e->input_event_usec}};
+            auto t = e->time_point ();
 
 #if 0
             cout << libevdev_event_type_get_name (e->type) << " : "
@@ -239,7 +302,12 @@ namespace dartpunk
             {
               // Down.
               case 1:
-                t0 = t;
+                switch (e->code)
+                {
+                  case DARTPUNK_BUTTON_1: b1 = t; break;
+                  case DARTPUNK_BUTTON_2: b2 = t; break;
+                  case DARTPUNK_BUTTON_5: b5 = t; break;
+                }
                 break;
 
               // Repeat.
@@ -250,27 +318,23 @@ namespace dartpunk
               case 0:
               {
                 //cout << "Button: " << (uint16_t) DARTPUNK_BUTTON (e) << endl;
-                auto dt = t - t0;
                 switch (e->code)
                 {
 #if DARTPUNK_INPUT_KEYBOARD
                   case KEY_ESC:
-                    stopped = 1;
+                    exit (DARTPUNK_QUIT);
+                    break;
+
+                  case KEY_BACKSPACE:
+                    cancel ();
                     break;
 #endif
 
-                  case DARTPUNK_BUTTON_1: settings.select (1); break;
-                  case DARTPUNK_BUTTON_2: settings.select (2); break;
-                  case DARTPUNK_BUTTON_3: settings.select (3); break;
-                  case DARTPUNK_BUTTON_4: settings.select (4); break;
-
-                  case DARTPUNK_BUTTON_NEXT:
-                    if (VERY_LONG_PRESS (dt))
-                      input_next_very_long ();
-                    else if (LONG_PRESS (dt))
-                      input_next_long ();
-                    else
-                      input_next ();
+                  case DARTPUNK_BUTTON_1: button1 (b1 [t]); break;
+                  case DARTPUNK_BUTTON_2: button2 (b2 [t]); break;
+                  case DARTPUNK_BUTTON_3: button3 (/****/); break;
+                  case DARTPUNK_BUTTON_4: button4 (/****/); break;
+                  case DARTPUNK_BUTTON_5: button5 (b5 [t]); break;
                 }
                 break;
               }
@@ -307,10 +371,24 @@ namespace dartpunk
           break;
       }
 
+      static Video v1 {"dawson.png", 64};
+      static Video v2 {"reset.png", 16, 2};
+
+#if DARTPUNK_INPUT_VIRTUAL
+      TimePoint t {milliseconds {SDL_GetTicks ()}};
+#else
+      TimePoint t {input::now ()};
+#endif
+
+      v1.render (this, b1 (t));
+      v2.render (this, b2 (t));
+
       display (matrix);
 
       this_thread::sleep_until (t1);
     }
+
+    return status;
   }
 
   const Color App::COLORS [] =

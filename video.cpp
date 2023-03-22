@@ -9,18 +9,20 @@ using namespace chrono;
 namespace dartpunk
 {
 
-  Video::Video (const string & path, uint8_t f) :
-    logo {"images/" + path},
-    frames {f}
+  Video::Video (const string & path, uint8_t f, uint8_t d) :
+    image {"images/" + path},
+    frames {f},
+    divisor {d}
   {
   }
 
-  void Video::render (App * app)
+  void Video::render (App * app, const OptDuration & d)
   {
-    static auto t0 = steady_clock::now ();
-    auto dt = duration_cast<milliseconds> (steady_clock::now () - t0);
-    uint8_t k = (dt.count () / 40) % frames;
-    app->draw (logo, {0, 64 * k, 128, 64}, {0, 0}, blend::NONE);
+    if (d)
+    {
+      uint16_t k = (*d / (divisor * 40ms)) % frames;
+      app->draw (image, {0, HEIGHT * k, WIDTH, HEIGHT}, {0, 0});
+    }
   }
 
 } // dartpunk
