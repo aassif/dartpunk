@@ -4,6 +4,7 @@
 #include "virtual.h"
 
 #define WINDOW_RADIUS 300
+#define WINDOW_TITLE "DartPunk - Board"
 
 #define BOARD_BULL_INNER     6.35
 #define BOARD_BULL_OUTER    16.0
@@ -20,7 +21,7 @@ namespace dartpunk::board
 
   Virtual::Virtual () :
     Board {},
-    window {SDL_CreateWindow ("DartPunk - Board", 0, 0, 2*WINDOW_RADIUS, 2*WINDOW_RADIUS, 0)},
+    window {SDL_CreateWindow (WINDOW_TITLE, 0, 0, 2*WINDOW_RADIUS, 2*WINDOW_RADIUS, 0)},
     renderer {SDL_CreateRenderer (window, -1, 0)}
   {
     emitConnectionEvent (true);
@@ -136,16 +137,26 @@ namespace dartpunk::board
     SDL_RenderPresent (renderer);
   }
 
-  void Virtual::click (const SDL_MouseButtonEvent & b)
+  void Virtual::click (const SDL_MouseButtonEvent & e)
   {
-    if (b.windowID == SDL_GetWindowID (window))
+    if (e.windowID == SDL_GetWindowID (window))
     {
-      auto [x, y] = map (b.x, b.y);
+      auto [x, y] = map (e.x, e.y);
       DartEvent d = dart (x, y);
       emitDartEvent (d.value, d.multiplier);
     }
   }
 
+  void Virtual::motion (const SDL_MouseMotionEvent & e)
+  {
+    if (e.windowID == SDL_GetWindowID (window))
+    {
+      auto [x, y] = map (e.x, e.y);
+      DartEvent d = dart (x, y);
+      string text = d.multiplier != 0 ? d.text () : WINDOW_TITLE;
+      SDL_SetWindowTitle (window, text.c_str ());
+    }
+  }
   const uint8_t Virtual::VALUES [] {
     20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5
   };

@@ -239,6 +239,10 @@ namespace dartpunk
           case SDL_MOUSEBUTTONUP:
             board.click (e.button);
             break;
+
+          case SDL_MOUSEMOTION:
+            board.motion (e.motion);
+            break;
 #endif
 
 #if DARTPUNK_INPUT_VIRTUAL

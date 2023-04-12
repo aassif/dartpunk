@@ -22,6 +22,7 @@ namespace dartpunk::board
     public:
       Virtual ();
       void click (const SDL_MouseButtonEvent &);
+      void motion (const SDL_MouseMotionEvent &);
 
     private:
       static const uint8_t VALUES [];
