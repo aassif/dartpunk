@@ -1,6 +1,7 @@
 #ifndef __DARTPUNK_IMAGE__
 #define __DARTPUNK_IMAGE__
 
+#include <cstdint>
 #include <functional>
 #include <cmath>
 #include <string>
