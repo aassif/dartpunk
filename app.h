@@ -44,7 +44,7 @@ namespace dartpunk
       // Settings.
       void settings_confirm ();
       // Game logic.
-      void game_next ();
+      void game_button (board::Button);
       void game_stop ();
       // Special behaviour.
       void exit (int);

@@ -138,9 +138,9 @@ namespace dartpunk
     }
   }
 
-  void App::game_next ()
+  void App::game_button (board::Button b)
   {
-    if (game->button (board::Button::NEXT))
+    if (game->button (b))
       game_stop ();
   }
 
@@ -165,7 +165,7 @@ namespace dartpunk
         break;
 
       case State::GAME:
-        game_stop ();
+        game_button (board::Button::CANCEL);
         break;
     }
   }
@@ -179,7 +179,7 @@ namespace dartpunk
         break;
 
       case State::GAME:
-        game_next ();
+        game_button (board::Button::NEXT);
         break;
     }
   }

@@ -88,14 +88,17 @@ namespace dartpunk::game
       }
 
       case Button::CANCEL:
-        if (! stack.empty ())
-        {
-          pop ();
+      {
+        if (stack.empty ())
+          return true;
 
-          state = stack.top ();
-          stack.pop ();
-        }
+        pop ();
+
+        state = stack.top ();
+        stack.pop ();
+
         return false;
+      }
 
       default:
         return false;
